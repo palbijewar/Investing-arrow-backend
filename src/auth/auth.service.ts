@@ -34,7 +34,7 @@ export class AuthService {
       password: hash,
     });
 
-    return { message: 'User registered successfully' };
+    return { status:"success", message: 'User registered successfully' };
   }
 
   async login(dto: LoginDto) {
@@ -51,6 +51,6 @@ export class AuthService {
     const payload = { sub: user._id, sponsor_id: user.sponsor_id };
     const token = this.jwtService.sign(payload);
 
-    return { access_token: token };
+    return { status:"success",data:{access_token: token }};
   }
 }
