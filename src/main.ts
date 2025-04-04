@@ -8,9 +8,10 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://localhost:3000',                 // local dev
-      'https://investingarrowbot.com',         // your frontend
-      'https://api.investingarrowbot.com'      // your new backend domain
+      'http://localhost:3000', // Local dev
+      'https://investingarrowbot.com', // Your custom domain (if used)
+      'https://api.investingarrowbot.com', // Custom API domain (if mapped)
+      'https://investing-arrowbot-app.vercel.app' // ✅ Actual Vercel frontend
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
