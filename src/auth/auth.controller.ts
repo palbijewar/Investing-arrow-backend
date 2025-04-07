@@ -21,7 +21,5 @@ export class AuthController {
   async getSponsorName(@Param('sponsor_id') sponsor_id: string) {
     const sponsorName = await this.authService.getSponsorName(sponsor_id);
     return sponsorName
-      ? { sponsor_id, sponsorName }
-      : { message: 'Sponsor not found' };
   }
 }
