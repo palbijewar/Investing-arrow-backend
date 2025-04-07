@@ -17,7 +17,7 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignupDto) {
-    const { sponsor_id, username, email, password, confirm_password } = dto;
+    const { sponsor_id, referred_by, username, email, password, confirm_password } = dto;
 
     if (password !== confirm_password) {
       throw new BadRequestException('Passwords do not match');
@@ -32,6 +32,7 @@ export class AuthService {
       username,
       email,
       password: hash,
+      referred_by,
     });
 
     return { status:"success", message: 'User registered successfully' };

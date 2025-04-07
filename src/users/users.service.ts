@@ -17,6 +17,7 @@ export class UsersService {
 
   async create(data: {
     sponsor_id: string;
+    referred_by: string;
     username: string;
     email: string;
     password: string;

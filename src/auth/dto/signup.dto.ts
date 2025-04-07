@@ -5,6 +5,9 @@ export class SignupDto {
   sponsor_id: string;
 
   @IsNotEmpty()
+  referred_by: string;
+
+  @IsNotEmpty()
   username: string;
 
   @IsEmail()

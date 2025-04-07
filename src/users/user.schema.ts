@@ -6,6 +6,9 @@ export class User extends Document {
   @Prop({ required: true })
   sponsor_id: string;
 
+  @Prop({ required: false })
+  referred_by: string; // 
+
   @Prop({ required: true })
   username: string;
 
