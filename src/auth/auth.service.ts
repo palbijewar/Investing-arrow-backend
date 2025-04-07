@@ -54,4 +54,9 @@ export class AuthService {
 
     return { status:"success",data:{access_token: token }};
   }
+
+  async getSponsorName(sponsor_id: string): Promise<string | null> {
+    const sponsor = await this.usersService.findBySponsorID(sponsor_id);
+    return sponsor ? sponsor.username : null;
+  }  
 }

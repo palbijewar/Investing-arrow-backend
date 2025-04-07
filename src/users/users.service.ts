@@ -25,4 +25,9 @@ export class UsersService {
     const newUser = new this.userModel(data);
     return newUser.save();
   }
+
+  async getSponsorName(sponsor_id: string): Promise<string | null> {
+    const sponsor = await this.userModel.findOne({ sponsor_id }).exec();
+    return sponsor ? sponsor.username : null;
+  }  
 }
