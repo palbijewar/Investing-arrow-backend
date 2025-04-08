@@ -8,6 +8,7 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ForgotPasswordDto } from './dto/forgotpass.dto';
 
 @Injectable()
 export class AuthService {
@@ -67,6 +68,28 @@ export class AuthService {
         sponsor_id: sponsor.sponsor_id,
         username: sponsor.username,
       },
+    };
+  }  
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email, new_password, confirm_password } = dto;
+  
+    if (new_password !== confirm_password) {
+      throw new BadRequestException('Passwords do not match');
+    }
+  
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Email not found');
+    }
+  
+    const hash = await bcrypt.hash(new_password, 10);
+    user.password = hash;
+    await user.save();
+  
+    return {
+      status: 'success',
+      message: 'Password reset successful',
     };
   }  
 }

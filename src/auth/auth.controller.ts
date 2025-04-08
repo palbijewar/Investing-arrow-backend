@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgotpass.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -22,4 +23,9 @@ export class AuthController {
     const sponsorName = await this.authService.getSponsorName(sponsor_id);
     return sponsorName
   }
+
+  @Post('forgot-password')
+forgotPassword(@Body() dto: ForgotPasswordDto) {
+  return this.authService.forgotPassword(dto);
+}
 }
