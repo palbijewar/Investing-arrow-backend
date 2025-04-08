@@ -72,20 +72,7 @@ export class AuthService {
   }  
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const { email, new_password, confirm_password } = dto;
-  
-    if (new_password !== confirm_password) {
-      throw new BadRequestException('Passwords do not match');
-    }
-  
-    const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      throw new BadRequestException('Email not found');
-    }
-  
-    const hash = await bcrypt.hash(new_password, 10);
-    user.password = hash;
-    await user.save();
+    const { email } = dto;
   
     return {
       status: 'success',

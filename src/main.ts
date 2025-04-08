@@ -11,7 +11,8 @@ async function bootstrap() {
       'http://localhost:3000', // Local dev
       'https://investingarrowbot.com', // Your custom domain (if used)
       'https://api.investingarrowbot.com', // Custom API domain (if mapped)
-      'https://investing-arrowbot-app.vercel.app' // ✅ Actual Vercel frontend
+      'https://investing-arrowbot-app.vercel.app', // ✅ Actual Vercel frontend
+      'https://investingarrowbot.pages.dev'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
