@@ -21,7 +21,7 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignupDto) {
-    const { sponsor_id, referred_by, username, email, password, confirm_password } = dto;
+    const { sponsor_id, referred_by, username, email, phone, password, confirm_password } = dto;
 
     if (password !== confirm_password) {
       throw new BadRequestException('Passwords do not match');
@@ -35,6 +35,7 @@ export class AuthService {
       sponsor_id,
       username,
       email,
+      phone,
       password: hash,
       referred_by,
     });
@@ -102,6 +103,7 @@ export class AuthService {
         sponsor_id: user.sponsor_id,
         username: user.username,
         email: user.email,
+        phone: user.phone,
       })),
     };
   }  
@@ -116,6 +118,7 @@ export class AuthService {
         sponsor_id: user.sponsor_id,
         username: user.username,
         email: user.email,
+        phone: user.phone,
         referred_by: user.referred_by,
       })),
     };
@@ -133,6 +136,7 @@ export class AuthService {
         sponsor_id: sponsor.sponsor_id,
         username: sponsor.username,
         email: sponsor.email,
+        phone: sponsor.phone,
         referred_by: sponsor.referred_by,
       },
     };

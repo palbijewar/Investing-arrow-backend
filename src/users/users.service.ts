@@ -25,6 +25,7 @@ export class UsersService {
     username: string;
     email: string;
     password: string;
+    phone: string;
   }) {
     const newUser = new this.userModel(data);
     return newUser.save();
