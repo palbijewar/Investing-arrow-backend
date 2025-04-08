@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { SignupDto } from './dto/signup.dto';
@@ -9,12 +10,14 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgotpass.dto';
+import * as admin from 'firebase-admin'; 
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    // @Inject('FIREBASE_ADMIN') private firebase: admin.app.App
   ) {}
 
   async signup(dto: SignupDto) {
@@ -77,6 +80,44 @@ export class AuthService {
     return {
       status: 'success',
       message: 'Password reset successful',
+    };
+  }  
+
+  // async sendResetPasswordLink(email: string) {
+  //   try {
+  //     const link = await this.firebase.auth().generatePasswordResetLink(email);
+  //     // You can either return the link or send it via email using nodemailer, etc.
+  //     return { status: 'success', message: 'Password reset link sent', link };
+  //   } catch (error) {
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
+
+  async getReferredSponsors(sponsor_id: string) {
+    const users = await this.usersService.getReferredSponsors(sponsor_id);
+    return {
+      status: 'success',
+      count: users.length,
+      data: users.map(user => ({
+        sponsor_id: user.sponsor_id,
+        username: user.username,
+        email: user.email,
+      })),
+    };
+  }  
+
+  async getSecondLevelReferrals(sponsor_id: string) {
+    const users = await this.usersService.getSecondLevelReferrals(sponsor_id);
+  
+    return {
+      status: 'success',
+      count: users.length,
+      data: users.map(user => ({
+        sponsor_id: user.sponsor_id,
+        username: user.username,
+        email: user.email,
+        referred_by: user.referred_by,
+      })),
     };
   }  
 }

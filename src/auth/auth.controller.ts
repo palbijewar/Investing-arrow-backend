@@ -28,4 +28,14 @@ export class AuthController {
 forgotPassword(@Body() dto: ForgotPasswordDto) {
   return this.authService.forgotPassword(dto);
 }
+
+@Get('referrals/:sponsor_id')
+getReferredSponsors(@Param('sponsor_id') sponsor_id: string) {
+  return this.authService.getReferredSponsors(sponsor_id);
+}
+
+@Get('referrals/second-level/:sponsor_id')
+getSecondLevelReferrals(@Param('sponsor_id') sponsor_id: string) {
+  return this.authService.getSecondLevelReferrals(sponsor_id);
+}
 }

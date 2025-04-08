@@ -30,4 +30,17 @@ export class UsersService {
     const sponsor = await this.userModel.findOne({ sponsor_id }).exec();
     return sponsor ? sponsor.username : null;
   }  
+
+  async getReferredSponsors(sponsor_id: string): Promise<User[]> {
+    return this.userModel.find({ referred_by: sponsor_id }).exec();
+  }  
+
+  async getSecondLevelReferrals(sponsor_id: string): Promise<User[]> {
+    // First level referrals
+    const firstLevelUsers = await this.userModel.find({ referred_by: sponsor_id }).exec();
+    const firstLevelSponsorIDs = firstLevelUsers.map(user => user.sponsor_id);
+  
+    // Second level referrals
+    return this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
+  }  
 }
