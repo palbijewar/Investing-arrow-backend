@@ -15,6 +15,10 @@ export class UsersService {
     return this.userModel.findOne({ sponsor_id }).exec();
   }
 
+  async getSponsorDetails(sponsor_id: string): Promise<User | null> {
+    return this.userModel.findOne({ sponsor_id }).exec();
+  }  
+
   async create(data: {
     sponsor_id: string;
     referred_by: string;

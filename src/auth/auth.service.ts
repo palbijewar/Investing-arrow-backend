@@ -120,4 +120,21 @@ export class AuthService {
       })),
     };
   }  
+
+  async getSponsorDetails(sponsor_id: string) {
+    const sponsor = await this.usersService.getSponsorDetails(sponsor_id);
+    if (!sponsor) {
+      return { status: 'error', message: 'Sponsor not found' };
+    }
+  
+    return {
+      status: 'success',
+      data: {
+        sponsor_id: sponsor.sponsor_id,
+        username: sponsor.username,
+        email: sponsor.email,
+        referred_by: sponsor.referred_by,
+      },
+    };
+  }  
 }

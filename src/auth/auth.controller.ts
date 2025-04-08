@@ -38,4 +38,9 @@ getReferredSponsors(@Param('sponsor_id') sponsor_id: string) {
 getSecondLevelReferrals(@Param('sponsor_id') sponsor_id: string) {
   return this.authService.getSecondLevelReferrals(sponsor_id);
 }
+
+@Get('sponsor-details/:sponsor_id')
+getSponsorDetails(@Param('sponsor_id') sponsor_id: string) {
+  return this.authService.getSponsorDetails(sponsor_id);
+}
 }
