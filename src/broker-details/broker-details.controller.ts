@@ -2,16 +2,16 @@ import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
 import { BrokerService } from './broker-details.service';
 import { BrokerDto } from './dto/broker-details.dto';
 
-@Controller('broker')
+@Controller('broker-details')
 export class BrokerController {
   constructor(private readonly brokerService: BrokerService) {}
 
-  @Post('broker-details')
+  @Post()
   async create(@Body() brokerDto: BrokerDto) {
     return this.brokerService.create(brokerDto);
   }
 
-  @Get('broker-details')
+  @Get()
   async getAll() {
     return this.brokerService.findAll();
   }
