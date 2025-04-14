@@ -4,10 +4,10 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class PaymentOption extends Document {
   @Prop({ required: true })
-  amount: string;
+  amount: number;
 
-  @Prop()
-  fileUrl?: string;
+  @Prop({ required: true })
+  filePath: string;
 }
 
 export const PaymentOptionSchema = SchemaFactory.createForClass(PaymentOption);

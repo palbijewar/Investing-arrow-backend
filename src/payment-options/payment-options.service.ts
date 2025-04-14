@@ -1,23 +1,44 @@
-import {
-  Injectable,
-} from '@nestjs/common';
-import * as admin from 'firebase-admin'; 
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PaymentOption } from './payment-options.schema';
 import { PaymentOptionDto } from './dto/payment-options.dto';
+import { S3Service } from './s3-config.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentOptionService {
-  constructor(@InjectModel(PaymentOption.name) private brokerModel: Model<PaymentOption>) {}
+  private readonly bucket: string;
 
-  async create(paymentOptionDto: PaymentOptionDto, file: Express.MulterS3.File): Promise<any> {
-    const paymentOption = new this.brokerModel({
-      ...paymentOptionDto,
-      fileUrl: file?.location,
+  constructor(
+    @InjectModel(PaymentOption.name)
+    private readonly paymentOptionModel: Model<PaymentOption>,
+    private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
+  ) {
+    this.bucket = this.configService.get<string>('AWS_BUCKET_NAME')!;
+  }
+
+  async create(file: Express.Multer.File, dto: PaymentOptionDto) {
+    console.log({"this.bucket": this.bucket}); 
+    console.log({file, dto});
+    
+
+    const key = `payment_uploads/${Date.now()}_${file.originalname}`;
+
+    const uploadResult = await this.s3Service.uploadFile(
+      file.buffer,
+      this.bucket,
+      key,
+      file.mimetype,
+      'attachment',
+    );
+
+    const saved = await this.paymentOptionModel.create({
+      amount: dto.amount,
+      file_path: uploadResult.Location,
     });
-    await paymentOption.save();
-    return { status: 'success', data: paymentOption };
+
+    return saved;
   }
 }
-
