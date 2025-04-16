@@ -7,7 +7,7 @@ export class User extends Document {
   sponsor_id: string;
 
   @Prop({ required: false })
-  referred_by: string; // 
+  referred_by: string;
 
   @Prop({ required: true })
   username: string;
@@ -15,7 +15,7 @@ export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   phone: string;
 
   @Prop({ required: true })
