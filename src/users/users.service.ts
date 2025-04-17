@@ -53,11 +53,15 @@ export class UsersService {
     username?: string;
     email?: string;
     phone?: string;
-  }): Promise<User | null> {
-    return this.userModel.findOneAndUpdate(
+  }): Promise<any> {
+    const updatedSponsor = await this.userModel.findOneAndUpdate(
       { sponsor_id: sponsorId },
       { $set: updateData },
       { new: true }
     ).exec();
+    return {
+      status: 'success',
+      data: updatedSponsor
+    }
   }  
 }

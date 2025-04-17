@@ -53,6 +53,6 @@ async updateProfile(
   @Body() updateDto: UpdateUserDto,
 ) {
   const updatedUser = await this.usersService.updateProfile(sponsorId, updateDto);
-  return updatedUser;
+  return {updatedUser};
 }
 }
