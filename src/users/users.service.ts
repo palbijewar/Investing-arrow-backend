@@ -48,4 +48,16 @@ export class UsersService {
     // Second level referrals
     return this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
   }  
+
+  async updateProfile(sponsorId: string, updateData: {
+    username?: string;
+    email?: string;
+    phone?: string;
+  }): Promise<User | null> {
+    return this.userModel.findOneAndUpdate(
+      { sponsor_id: sponsorId },
+      { $set: updateData },
+      { new: true }
+    ).exec();
+  }  
 }

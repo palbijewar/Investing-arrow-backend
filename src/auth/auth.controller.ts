@@ -1,12 +1,14 @@
-import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgotpass.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly usersService: UsersService) {}
 
   @Post('signup')
   async signup(@Body() signupDto: SignupDto) {
@@ -43,5 +45,14 @@ getSecondLevelReferrals(@Param('sponsor_id') sponsor_id: string) {
 @Get('sponsor-details/:sponsor_id')
 getSponsorDetails(@Param('sponsor_id') sponsor_id: string) {
   return this.authService.getSponsorDetails(sponsor_id);
+}
+
+@Put('users/:sponsor_id')
+async updateProfile(
+  @Param('sponsor_id') sponsorId: string,
+  @Body() updateDto: UpdateUserDto,
+) {
+  const updatedUser = await this.usersService.updateProfile(sponsorId, updateDto);
+  return updatedUser;
 }
 }
