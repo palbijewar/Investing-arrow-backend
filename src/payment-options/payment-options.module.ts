@@ -23,7 +23,7 @@ import { S3Service } from './s3-config.service';
   ],
   controllers: [PaymentOptionController],
   providers: [PaymentOptionService, S3Service],
-  exports: [PaymentOptionService],
+  exports: [PaymentOptionService, MongooseModule],
 })
 
 export class PaymentOptionsModule {}

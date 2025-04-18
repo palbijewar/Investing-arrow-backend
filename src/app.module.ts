@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BrokerDetailsModule } from './broker-details/broker-details.module';
 import { PaymentOptionsModule } from './payment-options/payment-options.module';
+import { CardsModule } from './cards/cards.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PaymentOptionsModule } from './payment-options/payment-options.module';
     }),
     BrokerDetailsModule,
     PaymentOptionsModule,
+    CardsModule,
     AuthModule,
     UsersModule,
   ],
