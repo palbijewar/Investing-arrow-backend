@@ -1,12 +1,12 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
 export class PaymentOptionDto {
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   amount: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   dematAmount: string;
 }
 
