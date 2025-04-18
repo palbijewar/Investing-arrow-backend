@@ -7,7 +7,7 @@ export class PaymentOptionDto {
 
   @IsNotEmpty()
   @IsString()
-  demat_amount: string;
+  dematAmount: string;
 }
 
 export interface UploadResult {

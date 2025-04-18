@@ -34,7 +34,7 @@ export class PaymentOptionService {
   
     const saved = await this.paymentOptionModel.create({
       amount: dto.amount,
-      demat_amount: dto.demat_amount,
+      demat_amount: dto.dematAmount,
       sponsor_id: sponsor_id,
       file_path: uploadResult.Location, 
     });
