@@ -21,6 +21,7 @@ export class PaymentOptionService {
 
   async create(file: Express.Multer.File, dto: PaymentOptionDto, user: any) {
     const sponsor_id = user.sponsor_id;
+  console.log({dto});
   
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
   
