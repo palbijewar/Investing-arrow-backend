@@ -21,4 +21,17 @@ export class CardsController {
       }
     };
   }
+
+   @Get('total-fund')
+   @UseGuards(AuthGuard('jwt'))
+  async getTotalDematAmount(@Req() req) {
+    const sponsor_id = req.user.sponsor_id;
+    const total = await this.cardsService.getTotalDematAmountFund(sponsor_id);
+    return {
+      status: 'success',
+      data: {
+        total_demat_amount: total,
+      }
+    };
+  }
 }

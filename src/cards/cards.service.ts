@@ -17,4 +17,18 @@ export class CardsService {
   async getTotalPaymentsBySponsor(sponsor_id: string): Promise<number> {
     return this.paymentOptionModel.countDocuments({ sponsor_id });
   }
+
+  async getTotalDematAmountFund(sponsor_id: string): Promise<number> {
+    const result = await this.paymentOptionModel.aggregate([
+      { $match: { sponsor_id } },
+      {
+        $group: {
+          _id: null,
+          totalDematAmount: { $sum: { $toDouble: "$demat_amount" } },
+        },
+      },
+    ]);
+  
+    return result[0]?.totalDematAmount || 0;
+  }  
 }
