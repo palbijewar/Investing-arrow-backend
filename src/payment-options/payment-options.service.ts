@@ -19,13 +19,11 @@ export class PaymentOptionService {
     this.bucket = this.configService.get<string>('AWS_BUCKET_NAME')!;
   }
 
-  async create(file: Express.Multer.File, dto: PaymentOptionDto) {
-    console.log({"this.bucket": this.bucket}); 
-    console.log({file, dto});
-    
-
+  async create(file: Express.Multer.File, dto: PaymentOptionDto, user: any) {
+    const sponsor_id = user.sponsor_id;
+  
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
-
+  
     const uploadResult = await this.s3Service.uploadFile(
       file.buffer,
       this.bucket,
@@ -33,12 +31,18 @@ export class PaymentOptionService {
       file.mimetype,
       'attachment',
     );
-
+  
     const saved = await this.paymentOptionModel.create({
       amount: dto.amount,
-      file_path: uploadResult.Location,
+      demat_amount: dto.demat_amount,
+      sponsor_id: sponsor_id,
+      file_path: uploadResult.Location, 
     });
-
-    return saved;
+  
+    return {
+      status: 'success',
+      data: saved
+    };
   }
+  
 }

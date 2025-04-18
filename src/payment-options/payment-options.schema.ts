@@ -7,7 +7,13 @@ export class PaymentOption extends Document {
   amount: number;
 
   @Prop({ required: true })
-  filePath: string;
+  demat_amount: number;
+
+  @Prop({ required: true })
+  sponsor_id: string;
+
+  @Prop({ required: true })
+  file_path: string;
 }
 
 export const PaymentOptionSchema = SchemaFactory.createForClass(PaymentOption);

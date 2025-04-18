@@ -4,6 +4,10 @@ export class PaymentOptionDto {
   @IsNotEmpty()
   @IsString()
   amount: string;
+
+  @IsNotEmpty()
+  @IsString()
+  demat_amount: string;
 }
 
 export interface UploadResult {

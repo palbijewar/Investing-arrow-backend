@@ -26,7 +26,6 @@ export class S3Service {
     prefix: string,
   ): Promise<UploadResult[]> {
     const uploadResults: UploadResult[] = [];
-    console.log(this.configService.get<string>('AWS_REGION')!);
     for (const file of files) {
       const key = `${prefix}/${Date.now()}_${file.originalname}`;
       let thumb: Buffer, thumbKey: string, thumbnail: any;
@@ -73,10 +72,6 @@ export class S3Service {
     mimeType: string,
     disposition: string,
   ) {
-    console.log({  bucket,
-      key,
-      mimeType,
-      disposition});
     const upload = new Upload({
       client: this.s3Client,
       params: {
@@ -87,8 +82,7 @@ export class S3Service {
         ContentDisposition: disposition,
       },
     });
-    console.log({upload});
-    
+
     return await upload.done();
   }
 

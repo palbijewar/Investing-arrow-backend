@@ -1,26 +1,21 @@
-import {
-  Controller,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-  Body,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards, UploadedFile, UseInterceptors, Body, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PaymentOptionDto } from './dto/payment-options.dto';
 import { PaymentOptionService } from './payment-options.service';
+import { PaymentOptionDto } from './dto/payment-options.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('payment-options')
 export class PaymentOptionController {
-  constructor(private paymentOptionService: PaymentOptionService) {}
+  constructor(private readonly paymentOptionService: PaymentOptionService) {}
 
-  @Post('upload')
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
+  async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: PaymentOptionDto,
+    @Req() req
   ) {
-    console.log({file,dto});
-    
-    return this.paymentOptionService.create(file, dto);
+    return this.paymentOptionService.create(file, dto, req.user);
   }
 }
