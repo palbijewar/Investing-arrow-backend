@@ -37,16 +37,29 @@ export class UsersService {
   }  
 
   async getReferredSponsors(sponsor_id: string): Promise<User[]> {
-    return this.userModel.find({ referred_by: sponsor_id }).exec();
-  }  
+    return this.userModel.find({ referred_by: sponsor_id }).sort({ createdAt: -1 }).exec();
+  }   
 
-  async getSecondLevelReferrals(sponsor_id: string): Promise<User[]> {
-    // First level referrals
+  async getSecondLevelReferrals(sponsor_id: string): Promise<any[]> {
     const firstLevelUsers = await this.userModel.find({ referred_by: sponsor_id }).exec();
     const firstLevelSponsorIDs = firstLevelUsers.map(user => user.sponsor_id);
   
-    // Second level referrals
-    return this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
+    const secondLevelUsers = await this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
+  
+    const sponsorMap = new Map<string, string>();
+    firstLevelUsers.forEach(user => {
+      sponsorMap.set(user.sponsor_id, user.username);
+    });
+  
+    return secondLevelUsers.map(user => ({
+      registration_date: user.createdAt,
+      sponsor_id: user.referred_by,
+      sponsor_name: sponsorMap.get(user.referred_by),
+      referral_id: user.sponsor_id,
+      referral_username: user.username,
+      package: user.package,
+      level: user.level,
+    }));
   }  
 
   async updateProfile(sponsorId: string, updateData: {

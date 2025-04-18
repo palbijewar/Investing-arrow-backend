@@ -113,6 +113,7 @@ export class AuthService {
         username: user.username,
         email: user.email,
         phone: user.phone,
+        createdAt: user.createdAt,
       })),
     };
   }  
@@ -124,11 +125,13 @@ export class AuthService {
       status: 'success',
       count: users.length,
       data: users.map(user => ({
+        registration_date: user.registration_date,
         sponsor_id: user.sponsor_id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        referred_by: user.referred_by,
+        sponsor_name: user.sponsor_name,
+        referral_id: user.referral_id,
+        referral_username: user.referral_username,
+        package: user.package || '',
+        level: user.level || '',
       })),
     };
   }  

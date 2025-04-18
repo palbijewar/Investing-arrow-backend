@@ -20,6 +20,15 @@ export class User extends Document {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ required: false }) // Optional field for subscription/package
+  package?: string;
+
+  @Prop({ required: false }) // Optional field for referral level
+  level?: number;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
