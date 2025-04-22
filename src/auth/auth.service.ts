@@ -111,8 +111,7 @@ export class AuthService {
       data: users.map(user => ({
         sponsor_id: user.sponsor_id,
         username: user.username,
-        email: user.email,
-        phone: user.phone,
+        package: user.package || '',
         createdAt: user.createdAt,
       })),
     };
