@@ -51,7 +51,6 @@ export class CardsService {
   
   async getSecondLevelReferralsTotalIncome(sponsor_id: string) {
     const users = await this.usersService.getSecondLevelReferrals(sponsor_id);
-  
     const totalIncome = users.reduce((sum, user) => {
       const income = parseFloat(String(user.package)) || 0;
       return sum + income;

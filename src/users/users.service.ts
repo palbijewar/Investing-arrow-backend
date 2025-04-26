@@ -45,7 +45,6 @@ export class UsersService {
     const firstLevelSponsorIDs = firstLevelUsers.map(user => user.sponsor_id);
   
     const secondLevelUsers = await this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
-  
     const sponsorMap = new Map<string, string>();
     firstLevelUsers.forEach(user => {
       sponsorMap.set(user.sponsor_id, user.username);
