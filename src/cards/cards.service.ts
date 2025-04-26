@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PaymentOption } from 'src/payment-options/payment-options.schema';
+import { User } from 'src/users/user.schema';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class CardsService {
     private jwtService: JwtService,
     @InjectModel(PaymentOption.name)
     private readonly paymentOptionModel: Model<PaymentOption>,
+    @InjectModel(User.name) private userModel: Model<User>
   ) {}
 
   async getTotalPaymentsBySponsor(sponsor_id: string): Promise<number> {
@@ -50,17 +52,30 @@ export class CardsService {
   }
   
   async getSecondLevelReferralsTotalIncome(sponsor_id: string) {
-    const users = await this.usersService.getSecondLevelReferrals(sponsor_id);
-    const totalIncome = users.reduce((sum, user) => {
-      const income = parseFloat(String(user.package)) || 0;
-      return sum + income;
-    }, 0);
+    let totalIncome = 0;
+    let currentSponsors = [sponsor_id];
+    let level = 0;
+    const REFERRAL_PERCENTAGES = [20, 10, 5, 6, 5, 4, 4, 3, 2, 1];
+
+    while (currentSponsors.length > 0 && level < REFERRAL_PERCENTAGES.length) {
+      const users = await this.userModel.find({ referred_by: { $in: currentSponsors } }).exec();
+  
+      const levelIncome = users.reduce((sum, user) => {
+        const packageAmount = parseFloat(String(user.package)) || 0;
+        const income = (packageAmount * REFERRAL_PERCENTAGES[level]) / 100;
+        return sum + income;
+      }, 0);
+  
+      totalIncome += levelIncome;
+  
+      currentSponsors = users.map(user => user.sponsor_id);
+      level++;
+    }
   
     return {
       status: 'success',
       data: {
         total_income: totalIncome,
-        count: users.length,
       },
     };
   }
