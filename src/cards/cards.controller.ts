@@ -40,12 +40,7 @@ export class CardsController {
  async getReferredSponsorsTotalIncome(@Req() req) {
    const sponsor_id = req.user.sponsor_id;
    const total = await this.cardsService.getReferredSponsorsTotalIncome(sponsor_id);
-   return {
-     status: 'success',
-     data: {
-       total_demat_amount: total,
-     }
-   };
+   return total
  }
 
  @Get('second-level-income/:sponsor_id')
@@ -53,11 +48,6 @@ export class CardsController {
 async getSecondLevelReferralsTotalIncome(@Req() req) {
   const sponsor_id = req.user.sponsor_id;
   const total = await this.cardsService.getSecondLevelReferralsTotalIncome(sponsor_id);
-  return {
-    status: 'success',
-    data: {
-      total_demat_amount: total,
-    }
-  };
+  return total
 }
 }
