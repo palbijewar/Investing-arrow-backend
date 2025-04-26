@@ -152,38 +152,4 @@ export class AuthService {
       },
     };
   }  
-
-  async getReferredSponsorsTotalIncome(sponsor_id: string) {
-    const users = await this.usersService.getReferredSponsors(sponsor_id);
-  
-    const totalIncome = users.reduce((sum, user) => {
-      const income = parseFloat(String(user.package)) || 0;
-      return sum + income;
-    }, 0);
-  
-    return {
-      status: 'success',
-      data: {
-        total_income: totalIncome,
-        count: users.length,
-      },
-    };
-  }
-  
-  async getSecondLevelReferralsTotalIncome(sponsor_id: string) {
-    const users = await this.usersService.getSecondLevelReferrals(sponsor_id);
-  
-    const totalIncome = users.reduce((sum, user) => {
-      const income = parseFloat(String(user.package)) || 0;
-      return sum + income;
-    }, 0);
-  
-    return {
-      status: 'success',
-      data: {
-        total_income: totalIncome,
-        count: users.length,
-      },
-    };
-  }
 }
