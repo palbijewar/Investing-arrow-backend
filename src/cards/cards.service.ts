@@ -59,8 +59,10 @@ export class CardsService {
 
     while (currentSponsors.length > 0 && level < REFERRAL_PERCENTAGES.length) {
       const users = await this.userModel.find({ referred_by: { $in: currentSponsors } }).exec();
+    const firstLevelSponsorIDs = users.map(user => user.sponsor_id);
   
-      const levelIncome = users.reduce((sum, user) => {
+    const secondLevelUsers = await this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
+      const levelIncome = secondLevelUsers.reduce((sum, user) => {
         const packageAmount = parseFloat(String(user.package)) || 0;
         const income = (packageAmount * REFERRAL_PERCENTAGES[level]) / 100;
         return sum + income;
@@ -68,7 +70,7 @@ export class CardsService {
   
       totalIncome += levelIncome;
   
-      currentSponsors = users.map(user => user.sponsor_id);
+      currentSponsors = secondLevelUsers.map(user => user.sponsor_id);
       level++;
     }
   
