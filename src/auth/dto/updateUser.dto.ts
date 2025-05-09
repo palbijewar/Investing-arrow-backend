@@ -8,4 +8,6 @@ export class UpdateUserDto {
 
   @MinLength(10)
   phone: string;
+
+  user_type: string
 }
