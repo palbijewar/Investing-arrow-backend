@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Put, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -55,4 +55,14 @@ async updateProfile(
   const updatedUser = await this.usersService.updateProfile(sponsorId, updateDto);
   return {updatedUser};
 }
+
+@Patch('activate/:sponsor_id')
+  async activateUser(@Param('sponsor_id') sponsorId: string) {
+    const updatedUser = await this.usersService.activateUser(sponsorId);
+    return {
+      status: 'success',
+      message: `User ${sponsorId} activated`,
+      data: updatedUser,
+    };
+  }
 }

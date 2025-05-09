@@ -76,4 +76,18 @@ export class UsersService {
       data: updatedSponsor
     }
   }  
+
+  async activateUser(sponsor_id: string): Promise<User> {
+    const user = await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { is_active: true } },
+      { new: true }
+    );
+  
+    if (!user) {
+      throw new Error(`User with sponsor_id ${sponsor_id} not found`);
+    }
+  
+    return user;
+  }  
 }

@@ -27,6 +27,14 @@ export class User extends Document {
   @Prop({ required: false }) // Optional field for referral level
   level?: number;
 
+  amount_deposited: string;
+
+  @Prop({ default: "default" })
+  user_type: string;
+
+  @Prop({ default: false })
+  is_active: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
