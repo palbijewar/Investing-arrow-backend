@@ -148,6 +148,7 @@ export class AuthService {
         username: sponsor.username,
         email: sponsor.email,
         phone: sponsor.phone,
+        user_type: sponsor.user_type,
         referred_by: sponsor.referred_by,
       },
     };
