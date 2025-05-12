@@ -92,6 +92,8 @@ export class AuthController {
     @Param('sponsor_id') sponsor_id: string,
     @Body() updateAmountDto: any,
   ) {
+    console.log({updateAmountDto});
+    
     return this.usersService.updateAmountDeposited(sponsor_id, updateAmountDto.amount_deposited);
   }
 }
