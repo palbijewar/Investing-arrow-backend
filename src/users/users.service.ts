@@ -113,24 +113,24 @@ export class UsersService {
     newAmount: number,
   ): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
-  console.log({user});
   
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
   
     const currentAmount = Number(user.amount_deposited) || 0;
-    const updatedAmount = currentAmount + newAmount; 
+    const updatedAmount = currentAmount + newAmount;
   
-    user.amount_deposited = updatedAmount.toString();
-    const updatedUser = await user.save();
-  console.log({updatedUser});
+    const updatedUser = await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { amount_deposited: updatedAmount.toString() } },
+      { new: true } // return updated document
+    );
   
     return {
-      status: "success",
-      message: "Amount deposited updated successfully",
+      status: 'success',
+      message: 'Amount deposited updated successfully',
       data: updatedUser,
     };
-  }
-  
+  }  
 }
