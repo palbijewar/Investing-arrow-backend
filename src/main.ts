@@ -15,7 +15,7 @@ async function bootstrap() {
       'https://investingarrowbot.pages.dev',
       'https://investing-arrow-backend.onrender.com'
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   });  
 
