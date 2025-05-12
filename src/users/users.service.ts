@@ -113,6 +113,7 @@ export class UsersService {
     newAmount: number,
   ): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
+  console.log({user});
   
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
@@ -123,6 +124,7 @@ export class UsersService {
   
     user.amount_deposited = updatedAmount.toString();
     const updatedUser = await user.save();
+  console.log({updatedUser});
   
     return {
       status: "success",
