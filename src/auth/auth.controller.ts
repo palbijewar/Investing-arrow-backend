@@ -86,4 +86,12 @@ export class AuthController {
     const sponsors = await this.usersService.getAllSponsors();
     return { status: "success", data: sponsors };
   }
+
+  @Patch('amount-deposited/:sponsor_id')
+  async updateAmount(
+    @Param('sponsor_id') sponsor_id: string,
+    @Body() updateAmountDto: any,
+  ) {
+    return this.usersService.updateAmountDeposited(sponsor_id, updateAmountDto.amount_deposited);
+  }
 }
