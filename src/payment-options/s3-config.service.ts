@@ -91,6 +91,7 @@ export class S3Service {
       Bucket: bucket,
       Key: fileKey,
     });
+console.log({command});
 
     const data = await this.s3Client.send(command);
     const body = data.Body as Readable;

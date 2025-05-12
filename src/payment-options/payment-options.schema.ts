@@ -14,6 +14,9 @@ export class PaymentOption extends Document {
 
   @Prop({ required: true })
   file_path: string;
+
+  @Prop({ required: true })
+  file_key: string;
 }
 
 export const PaymentOptionSchema = SchemaFactory.createForClass(PaymentOption);
