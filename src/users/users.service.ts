@@ -90,4 +90,9 @@ export class UsersService {
   
     return user;
   }  
+
+  async getAllSponsors(): Promise<any> {
+    const sponsors = await this.userModel.find().exec();
+    return sponsors
+  }  
 }
