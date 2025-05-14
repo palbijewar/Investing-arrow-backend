@@ -71,15 +71,18 @@ export class AuthController {
     return { updatedUser };
   }
 
-  @Patch("activate/:sponsor_id")
-  async activateUser(@Param("sponsor_id") sponsorId: string) {
-    const updatedUser = await this.usersService.activateUser(sponsorId);
+  @Patch('activate/:sponsor_id')
+  async toggleUserActivation(
+    @Param('sponsor_id') sponsorId: string,
+    @Body('is_active') isActive: boolean,
+  ) {
+    const updatedUser = await this.usersService.setUserActivation(sponsorId, isActive);
     return {
-      status: "success",
-      message: `User ${sponsorId} activated`,
+      status: 'success',
+      message: `User ${sponsorId} ${isActive ? 'activated' : 'deactivated'}`,
       data: updatedUser,
     };
-  }
+  }  
 
   @Get("users")
   async getAllSponsors() {

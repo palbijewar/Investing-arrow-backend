@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./user.schema";
@@ -89,20 +89,20 @@ export class UsersService {
     };
   }
 
-  async activateUser(sponsor_id: string): Promise<User> {
+  async setUserActivation(sponsor_id: string, isActive: boolean): Promise<User> {
     const user = await this.userModel.findOneAndUpdate(
       { sponsor_id },
-      { $set: { is_active: true } },
+      { $set: { is_active: isActive } },
       { new: true },
     );
-
+  
     if (!user) {
-      throw new Error(`User with sponsor_id ${sponsor_id} not found`);
+      throw new NotFoundException(`User with sponsor_id ${sponsor_id} not found`);
     }
-
+  
     return user;
   }
-
+  
   async getAllSponsors(): Promise<any> {
     const sponsors = await this.userModel.find().exec();
     return sponsors;
