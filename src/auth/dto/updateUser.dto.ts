@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, MinLength } from "class-validator";
 
 export class UpdateUserDto {
   username: string;
@@ -10,4 +10,9 @@ export class UpdateUserDto {
   phone: string;
 
   user_type: string
+}
+
+export class UpdateDepositDto{
+  @IsNumber()
+  amount_deposited: number;
 }

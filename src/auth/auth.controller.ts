@@ -12,7 +12,7 @@ import { AuthService } from "./auth.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { ForgotPasswordDto } from "./dto/forgotpass.dto";
-import { UpdateUserDto } from "./dto/updateUser.dto";
+import { UpdateDepositDto, UpdateUserDto } from "./dto/updateUser.dto";
 import { UsersService } from "src/users/users.service";
 
 @Controller("auth")
@@ -88,12 +88,12 @@ export class AuthController {
   }
 
   @Patch('amount-deposited/:sponsor_id')
-  async updateAmount(
-    @Param('sponsor_id') sponsor_id: string,
-    @Body() updateAmountDto: any,
-  ) {
-    console.log({updateAmountDto});
-    
-    return this.usersService.updateAmountDeposited(sponsor_id, updateAmountDto.amount_deposited);
-  }
+async updateAmount(
+  @Param('sponsor_id') sponsor_id: string,
+  @Body() data: any,
+) {
+  const amount = Number(data['amount-deposited']);
+
+  return this.usersService.updateAmountDeposited(sponsor_id, amount);
+}  
 }
