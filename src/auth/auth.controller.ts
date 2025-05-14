@@ -12,7 +12,7 @@ import { AuthService } from "./auth.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { ForgotPasswordDto } from "./dto/forgotpass.dto";
-import { UpdateDepositDto, UpdateUserDto } from "./dto/updateUser.dto";
+import { ActivateUserDto, UpdateDepositDto, UpdateUserDto } from "./dto/updateUser.dto";
 import { UsersService } from "src/users/users.service";
 
 @Controller("auth")
@@ -74,13 +74,12 @@ export class AuthController {
   @Patch('activate/:sponsor_id')
   async toggleUserActivation(
     @Param('sponsor_id') sponsorId: string,
-    @Body('is_active') isActive: boolean,
+    @Body() dto: ActivateUserDto,
   ) {
-    const updatedUser = await this.usersService.setUserActivation(sponsorId, isActive);
-    
+    const updatedUser = await this.usersService.setUserActivation(sponsorId, dto.is_active);
     return {
       status: 'success',
-      message: `User ${sponsorId} ${isActive ? 'activated' : 'deactivated'}`,
+      message: `User ${sponsorId} ${dto.is_active ? 'activated' : 'deactivated'}`,
       data: updatedUser,
     };
   }  
