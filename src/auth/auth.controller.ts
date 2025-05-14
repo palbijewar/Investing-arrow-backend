@@ -77,6 +77,7 @@ export class AuthController {
     @Body('is_active') isActive: boolean,
   ) {
     const updatedUser = await this.usersService.setUserActivation(sponsorId, isActive);
+    
     return {
       status: 'success',
       message: `User ${sponsorId} ${isActive ? 'activated' : 'deactivated'}`,
