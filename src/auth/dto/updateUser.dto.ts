@@ -14,10 +14,15 @@ export class UpdateUserDto {
 
 export class UpdateDepositDto{
   @IsNumber()
-  amount_deposited: number;
+  amount_deposited: string;
 }
 
 export class ActivateUserDto {
   @IsBoolean()
   is_active: boolean;
+}
+
+export class UpdatePackageDto{
+  @IsNumber()
+  package: string;
 }

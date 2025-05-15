@@ -128,4 +128,25 @@ export class UsersService {
       data: updatedUser,
     };
   }  
+
+  async updatePackage(sponsor_id: string, newPackage: any): Promise<any> {
+    const user = await this.userModel.findOne({ sponsor_id });
+    if (!user) {
+      throw new Error(`User with sponsor_id ${sponsor_id} not found`);
+    }
+    const updatedPackage = Number(newPackage);
+  
+    await this.userModel.updateOne(
+      { sponsor_id },
+      { $set: { package: updatedPackage.toString() } }
+    );
+  
+    const updatedUser = await this.userModel.findOne({ sponsor_id });
+  
+    return {
+      status: "success",
+      message: "Package updated successfully",
+      data: updatedUser,
+    };
+  }  
 }
