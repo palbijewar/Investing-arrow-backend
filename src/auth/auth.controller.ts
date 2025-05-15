@@ -95,8 +95,10 @@ async updateAmount(
   @Param('sponsor_id') sponsor_id: string,
   @Body() data: any,
 ) {
+  console.log({data});
+  
   const amount = Number(data['amount-deposited']);
-
+  console.log({amount});
   return this.usersService.updateAmountDeposited(sponsor_id, amount);
 }  
 }
