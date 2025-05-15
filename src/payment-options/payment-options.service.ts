@@ -54,17 +54,10 @@ export class PaymentOptionService {
     if (!record || !record.file_path) {
       throw new NotFoundException("PDF not found for this sponsor ID");
     }
-    
-    const fileKey = record.file_key
-
-    const pdfBuffer = await this.s3Service.getPdfBuffer(this.bucket, fileKey);
-
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${path.basename(fileKey)}"`,
-      "Content-Length": pdfBuffer.length,
-    });
-
-    res.end(pdfBuffer);
+  
+    return {
+      status: "success",
+      data:record.file_path
+    };
   }
 }
