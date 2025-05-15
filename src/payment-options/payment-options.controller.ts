@@ -28,6 +28,9 @@ export class PaymentOptionController {
     @Body() dto: PaymentOptionDto,
     @Req() req,
   ) {
+    console.log({req});
+    console.log(req.user);
+    
     return this.paymentOptionService.create(file, dto, req.user);
   }
 
