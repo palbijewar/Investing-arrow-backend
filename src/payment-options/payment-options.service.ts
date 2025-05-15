@@ -48,7 +48,7 @@ export class PaymentOptionService {
     };
   }
 
-  async getPdfBySponsorId(sponsor_id: string, res: Response) {
+  async getPdfBySponsorId(sponsor_id: string) {
     const record = await this.paymentOptionModel.findOne({ sponsor_id });
 
     if (!record || !record.file_path) {

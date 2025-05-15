@@ -32,8 +32,8 @@ export class PaymentOptionController {
   }
 
   @Get("pdf/:sponsor_id")
-  async getPdf(@Param("sponsor_id") sponsor_id: string, @Res() res: Response) {
-    const result = await this.paymentOptionService.getPdfBySponsorId(sponsor_id, res);
+  async getPdf(@Param("sponsor_id") sponsor_id: string) {
+    const result = await this.paymentOptionService.getPdfBySponsorId(sponsor_id);
     return result;
   }
 }
