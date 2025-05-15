@@ -105,8 +105,8 @@ export class AuthController {
     @Param('sponsor_id') sponsor_id: string,
     @Body() data: any,
   ) {
-    const amount = Number(data.package);
+    const amount = data.package;
   
-    return this.usersService.updateAmountDeposited(sponsor_id, amount);
+    return this.usersService.updatePackage(sponsor_id, amount);
   }  
 }
