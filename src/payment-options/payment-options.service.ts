@@ -54,7 +54,6 @@ export class PaymentOptionService {
     if (!record || !record.file_path) {
       throw new NotFoundException("PDF not found for this sponsor ID");
     }
-  console.log({record});
   
     return {
       status: "success",
