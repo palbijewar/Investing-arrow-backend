@@ -36,12 +36,12 @@ export class CardsService {
 
   async getReferredSponsorsTotalIncome(sponsor_id: string) {
     const users = await this.usersService.getReferredSponsors(sponsor_id);
-  
+
     const totalIncome = users.reduce((sum, user) => {
       const income = parseFloat(String(user.package)) || 0;
       return sum + income;
     }, 0);
-  
+
     return {
       status: 'success',
       data: {
@@ -50,7 +50,7 @@ export class CardsService {
       },
     };
   }
-  
+
   async getSecondLevelReferralsTotalIncome(sponsor_id: string) {
     let totalIncome = 0;
     let currentSponsors = [sponsor_id];
@@ -58,22 +58,30 @@ export class CardsService {
     const REFERRAL_PERCENTAGES = [20, 10, 5, 6, 5, 4, 4, 3, 2, 1];
 
     while (currentSponsors.length > 0 && level < REFERRAL_PERCENTAGES.length) {
-      const users = await this.userModel.find({ referred_by: { $in: currentSponsors } }).exec();
-    const firstLevelSponsorIDs = users.map(user => user.sponsor_id);
-  
-    const secondLevelUsers = await this.userModel.find({ referred_by: { $in: firstLevelSponsorIDs } }).exec();
+      const users = await this.userModel.find({
+        referred_by: { $in: currentSponsors },
+        is_active: true,
+      }).exec();
+
+      const firstLevelSponsorIDs = users.map(user => user.sponsor_id);
+
+      const secondLevelUsers = await this.userModel.find({
+        referred_by: { $in: firstLevelSponsorIDs },
+        is_active: true,
+      }).exec();
+
       const levelIncome = secondLevelUsers.reduce((sum, user) => {
         const packageAmount = parseFloat(String(user.package)) || 0;
         const income = (packageAmount * REFERRAL_PERCENTAGES[level]) / 100;
         return sum + income;
       }, 0);
-  
+
       totalIncome += levelIncome;
-  
+
       currentSponsors = secondLevelUsers.map(user => user.sponsor_id);
       level++;
     }
-  
+
     return {
       status: 'success',
       data: {
