@@ -164,7 +164,6 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
       const users = await this.userModel
         .find({
           referred_by: { $in: currentSponsors },
-          is_active: true,
         })
         .exec();
 
@@ -173,7 +172,6 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
       const secondLevelUsers = await this.userModel
         .find({
           referred_by: { $in: firstLevelSponsorIDs },
-          is_active: true,
         })
         .exec();
 
