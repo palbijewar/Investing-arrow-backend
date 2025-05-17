@@ -72,7 +72,7 @@ export class CardsController {
     return {
       status: 'success',
       data: {
-        direct_portfolio_investment: total,
+        direct_bot_income: total,
       },
     };
   }
@@ -83,7 +83,7 @@ export class CardsController {
     return {
       status: 'success',
       data: {
-        downline_portfolio_investment: total,
+        downline_bot_income: total,
       },
     };
   }
