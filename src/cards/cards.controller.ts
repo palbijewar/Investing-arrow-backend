@@ -53,21 +53,26 @@ export class CardsController {
     return total;
   }
 
-  @Get("direct-portfolio-investment/:sponsor_id")
-  @UseGuards(AuthGuard("jwt"))
-  async directPortfolioInvestment(@Req() req) {
-    const sponsor_id = req.user.sponsor_id;
+  @Get('direct-portfolio-investment/:sponsor_id')
+  async directPortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {
     const total = await this.cardsService.directPortfolioInvestment(sponsor_id);
-    return { status: "success", data: { total } };
+    return {
+      status: 'success',
+      data: {
+        direct_portfolio_investment: total,
+      },
+    };
   }
 
-  @Get("downline-portfolio-investment/:sponsor_id")
-  @UseGuards(AuthGuard("jwt"))
-  async getDownlinePortfolioInvestment(@Req() req) {
-    const sponsor_id = req.user.sponsor_id;
-    const total =
-      await this.cardsService.getDownlinePortfolioInvestment(sponsor_id);
-    return { status: "success", data: { total } };
+  @Get('downline-portfolio-investment/:sponsor_id')
+  async getDownlinePortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {    
+    const total = await this.cardsService.getDownlinePortfolioInvestment(sponsor_id);
+    return {
+      status: 'success',
+      data: {
+        downline_portfolio_investment: total,
+      },
+    };
   }
 
   @Get("team/direct/:sponsorId")

@@ -26,7 +26,7 @@ export class CardsService {
     if (userIds.length === 0) return 0;
 
     const result = await this.paymentOptionModel.aggregate([
-      { $match: { user_id: { $in: userIds } } },
+      { $match: { sponsor_id: { $in: userIds } } },
       {
         $group: {
           _id: null,
@@ -43,7 +43,7 @@ export class CardsService {
     const userIds = downlineUsers.map((u) => u.sponsor_id.toString());
 
     const result = await this.paymentOptionModel.aggregate([
-      { $match: { user_id: { $in: userIds } } },
+      { $match: { sponsor_id: { $in: userIds } } },
       {
         $group: { _id: null, total: { $sum: { $toDouble: "$demat_amount" } } },
       },
@@ -145,18 +145,26 @@ export class CardsService {
     };
   }
 
-  private async getAllDownlineUsers(sponsor_id: string): Promise<User[]> {
+   async getAllDownlineUsers(sponsor_id: string): Promise<any> {
     let downline: User[] = [];
-    let currentSponsorIds = [sponsor_id];
-
-    while (currentSponsorIds.length > 0) {
+  
+    const directReferrals = await this.userModel.find({
+      referred_by: sponsor_id,
+    }).lean();
+  
+    const directSponsorIds = directReferrals.map(user => user.sponsor_id);
+  
+    let nextSponsorIds = [...directSponsorIds];
+  
+    while (nextSponsorIds.length > 0) {
       const users = await this.userModel.find({
-        referred_by: { $in: currentSponsorIds },
-      });
+        referred_by: { $in: nextSponsorIds },
+      }).lean();
+  
       downline = downline.concat(users);
-      currentSponsorIds = users.map((user) => user.sponsor_id);
+      nextSponsorIds = users.map((user) => user.sponsor_id);
     }
-
+  
     return downline;
-  }
+  }  
 }
