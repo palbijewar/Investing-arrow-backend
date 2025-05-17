@@ -1,53 +1,84 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { CardsService } from './cards.service';
+import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { CardsService } from "./cards.service";
 
-@Controller('cards')
+@Controller("cards")
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  @Get('payment-count')
-  @UseGuards(AuthGuard('jwt'))
+  @Get("payment-count")
+  @UseGuards(AuthGuard("jwt"))
   async getPaymentCount(@Req() req) {
     const sponsor_id = req.user.sponsor_id;
 
     const total = await this.cardsService.getTotalPaymentsBySponsor(sponsor_id);
 
     return {
-      status: 'success',
+      status: "success",
       data: {
         sponsor_id,
-        total_payment_options: total
-      }
+        total_payment_options: total,
+      },
     };
   }
 
-   @Get('total-fund')
-   @UseGuards(AuthGuard('jwt'))
+  @Get("total-fund")
+  @UseGuards(AuthGuard("jwt"))
   async getTotalDematAmount(@Req() req) {
     const sponsor_id = req.user.sponsor_id;
     const total = await this.cardsService.getTotalDematAmountFund(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       data: {
         total_demat_amount: total,
-      }
+      },
     };
   }
 
-  @Get('referred-income/:sponsor_id')
-  @UseGuards(AuthGuard('jwt'))
- async getReferredSponsorsTotalIncome(@Req() req) {
-   const sponsor_id = req.user.sponsor_id;
-   const total = await this.cardsService.getReferredSponsorsTotalIncome(sponsor_id);
-   return total
- }
+  @Get("referred-income/:sponsor_id")
+  @UseGuards(AuthGuard("jwt"))
+  async getReferredSponsorsTotalIncome(@Req() req) {
+    const sponsor_id = req.user.sponsor_id;
+    const total =
+      await this.cardsService.getReferredSponsorsTotalIncome(sponsor_id);
+    return total;
+  }
 
- @Get('second-level-income/:sponsor_id')
- @UseGuards(AuthGuard('jwt'))
-async getSecondLevelReferralsTotalIncome(@Req() req) {
-  const sponsor_id = req.user.sponsor_id;
-  const total = await this.cardsService.getSecondLevelReferralsTotalIncome(sponsor_id);
-  return total
-}
+  @Get("second-level-income/:sponsor_id")
+  @UseGuards(AuthGuard("jwt"))
+  async getSecondLevelReferralsTotalIncome(@Req() req) {
+    const sponsor_id = req.user.sponsor_id;
+    const total =
+      await this.cardsService.getSecondLevelReferralsTotalIncome(sponsor_id);
+    return total;
+  }
+
+  @Get("direct-portfolio-investment/:sponsor_id")
+  @UseGuards(AuthGuard("jwt"))
+  async directPortfolioInvestment(@Req() req) {
+    const sponsor_id = req.user.sponsor_id;
+    const total = await this.cardsService.directPortfolioInvestment(sponsor_id);
+    return { status: "success", data: { total } };
+  }
+
+  @Get("downline-portfolio-investment/:sponsor_id")
+  @UseGuards(AuthGuard("jwt"))
+  async getDownlinePortfolioInvestment(@Req() req) {
+    const sponsor_id = req.user.sponsor_id;
+    const total =
+      await this.cardsService.getDownlinePortfolioInvestment(sponsor_id);
+    return { status: "success", data: { total } };
+  }
+
+  @Get("team/direct/:sponsorId")
+  async getDirectTeam(@Param("sponsorId") sponsorId: string) {
+    const count = await this.cardsService.getDirectTeamCount(sponsorId);
+    return { status: "success", data: { count } };
+  }
+
+  @Get("team/downline/:sponsorId")
+  async getDownlineTeam(@Param("sponsorId") sponsorId: string) {
+    const count = await this.cardsService.getTotalDownlineTeamCount(sponsorId);
+    return { status: "success", data: { count } };
+  }
 }
