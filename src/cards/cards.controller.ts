@@ -53,6 +53,41 @@ export class CardsController {
     return total;
   }
 
+  @Get("team/direct-bot/:sponsorId")
+  async getDirectbotCount(@Param("sponsorId") sponsorId: string) {
+    const total = await this.cardsService.getDirectbotCount(sponsorId);
+    return { status: "success", data: { direct_bot_count: total } };
+  }
+
+  @Get("team/downline-bot/:sponsorId")
+  async getActiveDownlineUsers(@Param("sponsorId") sponsorId: string) {
+    const total = await this.cardsService.getActiveDownlineUsers(sponsorId);
+    
+    return { status: "success", data: { downline_bot_count: total.length } };
+  }
+
+  @Get('bot-direct/:sponsor_id')
+  async botDirectPortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {
+    const total = await this.cardsService.botDirectPortfolioInvestment(sponsor_id);
+    return {
+      status: 'success',
+      data: {
+        direct_portfolio_investment: total,
+      },
+    };
+  }
+
+  @Get('bot-downline/:sponsor_id')
+  async botDownlinePortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {    
+    const total = await this.cardsService.botDownlinePortfolioInvestment(sponsor_id);
+    return {
+      status: 'success',
+      data: {
+        downline_portfolio_investment: total,
+      },
+    };
+  }
+
   @Get('direct-portfolio-investment/:sponsor_id')
   async directPortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {
     const total = await this.cardsService.directPortfolioInvestment(sponsor_id);

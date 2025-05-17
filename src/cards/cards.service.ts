@@ -16,6 +16,59 @@ export class CardsService {
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
+  // 1. Direct bot count
+  async getDirectbotCount(sponsor_id: string): Promise<number> {
+    const directUsers = await this.userModel.countDocuments({
+      referred_by: sponsor_id,
+      is_active: true,
+    });
+    return directUsers;
+  }
+
+  // 2. Downline bot count
+  async getActiveDownlineUsers(sponsor_id: string): Promise<any> {
+    let downline: User[] = [];
+  
+    const directReferrals = await this.userModel.find({
+      referred_by: sponsor_id,
+    }).lean();
+  
+    const directSponsorIds = directReferrals.map(user => user.sponsor_id);
+  
+    let nextSponsorIds = [...directSponsorIds];
+  
+    while (nextSponsorIds.length > 0) {
+      const users = await this.userModel.find({
+        referred_by: { $in: nextSponsorIds },
+        is_active: true,
+      }).lean();
+  
+      downline = downline.concat(users);
+      nextSponsorIds = users.map((user) => user.sponsor_id);
+    }
+  
+    return downline;
+  } 
+
+  // 1. Direct Portfolio Investment
+async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
+  const directUsers = await this.userModel
+  .find({ referred_by: sponsor_id, is_active: true })
+  .select('package')
+  .exec();
+  
+  const total = directUsers.reduce((sum, user) => sum + Number(user.package || 0), 0);
+  return total;
+  }
+  
+  // 2. Downline Portfolio Investment
+  async botDownlinePortfolioInvestment(sponsor_id: string): Promise<number> {
+  const downlineUsers = await this.getActiveDownlineUsers(sponsor_id);
+  
+  const total = downlineUsers.reduce((sum, user) => sum + Number(user.package || 0), 0);
+  return total;
+  }
+
 // 1. Direct portfolio Investment
   async directPortfolioInvestment(sponsor_id: string): Promise<number> {
     const directUsers = await this.userModel
@@ -166,5 +219,5 @@ export class CardsService {
     }
   
     return downline;
-  }  
+  }   
 }
