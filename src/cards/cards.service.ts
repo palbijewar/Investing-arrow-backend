@@ -187,13 +187,10 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
       level++;
     }
 
-    return {
-      status: "success",
-      data: {
+    return  {
         total_income: totalIncome,
         level_income: level
-      },
-    };
+      };
   }
 
    async getAllDownlineUsers(sponsor_id: string): Promise<any> {

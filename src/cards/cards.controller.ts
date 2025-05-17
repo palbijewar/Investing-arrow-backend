@@ -44,13 +44,10 @@ export class CardsController {
     return total;
   }
 
-  @Get("second-level-income/:sponsor_id")
-  @UseGuards(AuthGuard("jwt"))
-  async getSecondLevelReferralsTotalIncome(@Req() req) {
-    const sponsor_id = req.user.sponsor_id;
-    const total =
-      await this.cardsService.getSecondLevelReferralsTotalIncome(sponsor_id);
-    return total;
+  @Get("second-level-income/:sponsorId")
+  async getSecondLevelReferralsTotalIncome(@Param("sponsorId") sponsorId: string) {
+    const total = await this.cardsService.getSecondLevelReferralsTotalIncome(sponsorId);
+    return { status: "success", data: total };
   }
 
   @Get("team/direct-bot/:sponsorId")
