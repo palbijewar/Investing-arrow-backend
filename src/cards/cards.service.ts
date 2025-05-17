@@ -215,4 +215,106 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
   
     return downline;
   }   
+
+  async getRankIncome(sponsor_id: string): Promise<any> {
+    const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
+  
+    const aiRobotBusiness = downlineUsers.reduce((sum, user) => {
+      return sum + (user.package ? Number(user.package) : 0);
+    }, 0);
+  
+    if (aiRobotBusiness < 2000) {
+      return { rank: null, income: 0, aiRobotBusiness };
+    }
+  
+    // Step 1: Count how many direct referrals qualify at each MASTER level
+    const downlineMasterRanks = await Promise.all(
+      downlineUsers.map(async (user) => {
+        return {
+          sponsor_id: user.sponsor_id,
+          rank: await this.getUserMasterRank(user.sponsor_id),
+        };
+      })
+    );
+  
+    const countByRank = downlineMasterRanks.reduce((acc, u) => {
+      if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  
+    // Step 2: Determine highest MASTER level this sponsor qualifies for
+    const masterRanks = [
+      { rank: 'M1', required: 3, royalty: 0.25 },
+      { rank: 'M2', required: 3, royalty: 0.25 },
+      { rank: 'M3', required: 4, royalty: 0.15 },
+      { rank: 'M4', required: 5, royalty: 0.10 },
+      { rank: 'M5', required: 6, royalty: 0.10 },
+      { rank: 'M6', required: 7, royalty: 0.10 },
+      { rank: 'M7', required: 0, royalty: 0.05 },
+    ];
+  
+    let qualifiedRank: string | null = null;
+    let royaltyPercent = 0;
+  
+    for (let i = masterRanks.length - 1; i >= 0; i--) {
+      const { rank, required, royalty } = masterRanks[i];
+      if (rank === 'M7' || (countByRank[rank] || 0) >= required) {
+        qualifiedRank = rank;
+        royaltyPercent = royalty;
+        break;
+      }
+    }
+  
+    const totalRoyalty = aiRobotBusiness * 0.10 * royaltyPercent;
+  
+    return {
+      aiRobotBusiness,
+      rank: qualifiedRank,
+      royaltyPercent,
+      income: totalRoyalty,
+    };
+  }  
+
+  async getUserMasterRank(sponsor_id: string): Promise<string | null> {
+    const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
+  
+    const aiRobotBusiness = downlineUsers.reduce((sum, user) => {
+      return sum + (user.package ? Number(user.package) : 0);
+    }, 0);
+  
+    if (aiRobotBusiness < 2000) return null;
+  
+    const downlineMasterRanks = await Promise.all(
+      downlineUsers.map(async (user) => {
+        return {
+          sponsor_id: user.sponsor_id,
+          rank: await this.getUserMasterRank(user.sponsor_id),
+        };
+      })
+    );
+  
+    const countByRank = downlineMasterRanks.reduce((acc, u) => {
+      if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  
+    const masterRanks = [
+      { rank: 'M1', required: 3 },
+      { rank: 'M2', required: 3 },
+      { rank: 'M3', required: 4 },
+      { rank: 'M4', required: 5 },
+      { rank: 'M5', required: 6 },
+      { rank: 'M6', required: 7 },
+      { rank: 'M7', required: 0 },
+    ];
+  
+    for (let i = masterRanks.length - 1; i >= 0; i--) {
+      const { rank, required } = masterRanks[i];
+      if (rank === 'M7' || (countByRank[rank] || 0) >= required) {
+        return rank;
+      }
+    }
+  
+    return null;
+  }  
 }

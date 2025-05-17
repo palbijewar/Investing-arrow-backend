@@ -118,4 +118,10 @@ export class CardsController {
     const count = await this.cardsService.getTotalDownlineTeamCount(sponsorId);
     return { status: "success", data: { count } };
   }
+
+  @Get("ranks/:sponsorId")
+  async getRankIncome(@Param("sponsorId") sponsorId: string) {
+    const total = await this.cardsService.getRankIncome(sponsorId);
+    return { status: "success", data: total };
+  }
 }
