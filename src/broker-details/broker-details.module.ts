@@ -5,6 +5,7 @@ import { BrokerService } from "./broker-details.service";
 import { BrokerController } from "./broker-details.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Broker, BrokerSchema } from "./broker-details.schema"; 
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Broker, BrokerSchema } from "./broker-details.schema";
         signOptions: { expiresIn: "1d" },
       }),
     }),
+    AuthModule,
   ],
   controllers: [BrokerController],
   providers: [BrokerService],

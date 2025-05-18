@@ -17,6 +17,9 @@ export class Broker extends Document {
 
   @Prop({ required: true })
   totalFund: string; 
+
+  @Prop({ required: true })
+  sponsor_id: string;
 }
 
 export const BrokerSchema = SchemaFactory.createForClass(Broker);

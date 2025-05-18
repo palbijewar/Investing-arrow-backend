@@ -31,14 +31,6 @@ export class AuthService {
     if (existing) throw new BadRequestException('Email already registered');
 
     const hash = await bcrypt.hash(password, 10);
-    console.log('Creating user with data:', {
-      sponsor_id,
-      referred_by,
-      username,
-      email,
-      phone,
-      password: hash,
-    });
     
     await this.usersService.create({
       sponsor_id,
