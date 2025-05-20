@@ -289,4 +289,24 @@ export class UsersService {
       breakdown,
     };
   }
+
+  async updateProfit(sponsor_id: string, newProfit: any): Promise<any> {
+    const user = await this.userModel.findOne({ sponsor_id });
+    if (!user) {
+      throw new Error("User with sponsor_id ${sponsor_id} not found");
+    }
+
+    await this.userModel.updateOne(
+      { sponsor_id },
+      { $set: { profit: newProfit } },
+    );
+
+    const updatedUser = await this.userModel.findOne({ sponsor_id });
+
+    return {
+      status: "success",
+      message: "Profit updated successfully",
+      data: updatedUser,
+    };
+  }
 }

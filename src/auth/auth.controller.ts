@@ -117,6 +117,16 @@ export class AuthController {
     return this.usersService.updatePackage(sponsor_id, amount);
   }
 
+  @Patch("users/profit/:sponsor_id")
+  async updateProfit(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() data: any,
+  ) {
+    const amount = data.package;
+
+    return this.usersService.updateProfit(sponsor_id, amount);
+  }
+
   @Get("levels/:sponsor_id")
   async getReferralLevels(@Param("sponsor_id") sponsor_id: string) {
     const levels = await this.usersService.getReferralLevels(sponsor_id, 10);

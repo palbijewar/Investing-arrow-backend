@@ -21,11 +21,14 @@ export class User extends Document {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: false }) // Optional field for subscription/package
+  @Prop({ required: false })
   package?: string;
 
-  @Prop({ required: false }) // Optional field for referral level
+  @Prop({ required: false })
   level?: number;
+
+  @Prop({ required: false })
+  profit?: string;
 
   @Prop({ default: '0' })
   amount_deposited: string;
