@@ -215,46 +215,78 @@ export class UsersService {
   }
 
   async calculateSponsorChainLevelIncome(sponsor_id: string, amount: number) {
+    const userlist = await this.getReferralLevels(sponsor_id);
     const percentages = [25, 17, 12, 10, 8, 7, 6, 5, 5, 5];
-  
-    const result: {
-      level: number;
-      sponsor_id: string | null;
-      sponsor_name: string;
-      percentage: string;
-      income: number;
-    }[] = [];
-  
-    let currentSponsorId = sponsor_id;
-    let level = 1;
-  
-    while (currentSponsorId && level <= percentages.length) {
-      const user = await this.userModel
-        .findOne({ sponsor_id: currentSponsorId })
-        .exec();
-      if (!user) break;
-  
-      const referredBy = user.referred_by;
-      const income = (amount * percentages[level - 1]) / 100;
-  
-      result.push({
-        level,
-        sponsor_id: referredBy,
-        sponsor_name: user.username,
-        percentage: `${percentages[level - 1]}%`,
-        income,
-      });
-  
-      currentSponsorId = referredBy;
-      level++;
+
+    const allUsers: any[] = Object.values(userlist).flat();
+    const incomeMap = new Map<
+      string,
+      Map<
+        number,
+        {
+          sponsor_id: string;
+          sponsor_name: string;
+          percentage: string;
+          income: number;
+        }
+      >
+    >();
+
+    const processed = new Set<string>();
+
+    for (const user of allUsers) {
+      if (processed.has(user.sponsor_id)) continue;
+
+      let currentSponsorId = user.referral_id;
+      let level = 1;
+
+      while (currentSponsorId && level <= percentages.length) {
+        const sponsor = await this.userModel
+          .findOne({ sponsor_id: currentSponsorId })
+          .exec();
+        if (!sponsor) break;
+
+        const income = (amount * percentages[level - 1]) / 100;
+
+        if (!incomeMap.has(currentSponsorId)) {
+          incomeMap.set(currentSponsorId, new Map());
+        }
+
+        const levelMap = incomeMap.get(currentSponsorId)!;
+
+        if (!levelMap.has(level)) {
+          levelMap.set(level, {
+            sponsor_id: currentSponsorId,
+            sponsor_name: sponsor.username,
+            percentage: `${percentages[level - 1]}%`,
+            income: 0,
+          });
+        }
+
+        levelMap.get(level)!.income += income;
+
+        currentSponsorId = sponsor.referred_by;
+        level++;
+      }
+
+      processed.add(user.sponsor_id);
     }
-  
-    const totalIncome = result.reduce((sum, item) => sum + item.income, 0);
-  
+
+    const breakdown = Array.from(incomeMap.values()).flatMap((levelMap) =>
+      Array.from(levelMap.entries()).map(([level, data]) => ({
+        level,
+        ...data,
+      })),
+    );
+
+    const direct_income = (amount * 25) / 100;
+    const downline_income = amount - direct_income;
+
     return {
       amount,
-      totalIncome,
-      breakdown: result,
+      direct_income,
+      downline_income,
+      breakdown,
     };
-  }  
+  }
 }
