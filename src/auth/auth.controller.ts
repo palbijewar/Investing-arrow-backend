@@ -122,7 +122,7 @@ export class AuthController {
     @Param("sponsor_id") sponsor_id: string,
     @Body() data: any,
   ) {
-    const amount = data.package;
+    const amount = data.profit;
 
     return this.usersService.updateProfit(sponsor_id, amount);
   }
