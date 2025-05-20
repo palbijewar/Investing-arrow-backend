@@ -110,7 +110,7 @@ export class AuthService {
   }  
 
   async getSecondLevelReferrals(sponsor_id: string) {
-    const users = await this.usersService.getSecondLevelReferrals(sponsor_id);
+    const users = await this.usersService.getAllLowerLevelReferrals(sponsor_id);
   
     return {
       status: 'success',

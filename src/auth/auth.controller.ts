@@ -12,7 +12,11 @@ import { AuthService } from "./auth.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { ForgotPasswordDto } from "./dto/forgotpass.dto";
-import { ActivateUserDto, UpdateDepositDto, UpdateUserDto } from "./dto/updateUser.dto";
+import {
+  ActivateUserDto,
+  UpdateDepositDto,
+  UpdateUserDto,
+} from "./dto/updateUser.dto";
 import { UsersService } from "src/users/users.service";
 
 @Controller("auth")
@@ -71,18 +75,21 @@ export class AuthController {
     return { updatedUser };
   }
 
-  @Patch('activate/:sponsor_id')
+  @Patch("activate/:sponsor_id")
   async toggleUserActivation(
-    @Param('sponsor_id') sponsorId: string,
+    @Param("sponsor_id") sponsorId: string,
     @Body() dto: ActivateUserDto,
   ) {
-    const updatedUser = await this.usersService.setUserActivation(sponsorId, dto.is_active);
+    const updatedUser = await this.usersService.setUserActivation(
+      sponsorId,
+      dto.is_active,
+    );
     return {
-      status: 'success',
-      message: `User ${sponsorId} ${dto.is_active ? 'activated' : 'deactivated'}`,
+      status: "success",
+      message: `User ${sponsorId} ${dto.is_active ? "activated" : "deactivated"}`,
       data: updatedUser,
     };
-  }  
+  }
 
   @Get("users")
   async getAllSponsors() {
@@ -90,23 +97,41 @@ export class AuthController {
     return { status: "success", data: sponsors };
   }
 
-  @Patch('amount-deposited/:sponsor_id')
+  @Patch("amount-deposited/:sponsor_id")
   async updateAmount(
-    @Param('sponsor_id') sponsor_id: string,
+    @Param("sponsor_id") sponsor_id: string,
     @Body() data: any,
   ) {
     const amount = Number(data.amount_deposited);
-  
-    return this.usersService.updateAmountDeposited(sponsor_id, amount);
-  }  
 
-  @Patch('package/:sponsor_id')
+    return this.usersService.updateAmountDeposited(sponsor_id, amount);
+  }
+
+  @Patch("package/:sponsor_id")
   async updatePackage(
-    @Param('sponsor_id') sponsor_id: string,
+    @Param("sponsor_id") sponsor_id: string,
     @Body() data: any,
   ) {
     const amount = data.package;
-  
+
     return this.usersService.updatePackage(sponsor_id, amount);
-  }  
+  }
+
+  @Get("levels/:sponsor_id")
+  async getReferralLevels(@Param("sponsor_id") sponsor_id: string) {
+    const levels = await this.usersService.getReferralLevels(sponsor_id, 10);
+    return { status: "success", data: levels };
+  }
+
+  @Get("level-income/:sponsor_id")
+  async calculateSponsorChainLevelIncome(
+    @Body() data: any,
+    @Param("sponsor_id") sponsor_id: string,
+  ) {
+    const levels = await this.usersService.calculateSponsorChainLevelIncome(
+      sponsor_id,
+      data.amount,
+    );
+    return { status: "success", data: levels };
+  }
 }

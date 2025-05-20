@@ -43,29 +43,45 @@ export class UsersService {
       .exec();
   }
 
-  async getSecondLevelReferrals(sponsor_id: string): Promise<any[]> {
-    const firstLevelUsers = await this.userModel
-      .find({ referred_by: sponsor_id })
-      .exec();
-    const firstLevelSponsorIDs = firstLevelUsers.map((user) => user.sponsor_id);
+  async getAllLowerLevelReferrals(sponsor_id: string): Promise<any[]> {
+    await this.getReferralLevels(sponsor_id, 10);
+    const result: any[] = [];
+    const visitedSponsorIds = new Set<string>();
+    let currentLevelSponsorIds = [sponsor_id];
+    let level = 1;
 
-    const secondLevelUsers = await this.userModel
-      .find({ referred_by: { $in: firstLevelSponsorIDs } })
-      .exec();
-    const sponsorMap = new Map<string, string>();
-    firstLevelUsers.forEach((user) => {
-      sponsorMap.set(user.sponsor_id, user.username);
-    });
+    while (currentLevelSponsorIds.length > 0) {
+      const nextLevelSponsorIds: string[] = [];
 
-    return secondLevelUsers.map((user) => ({
-      registration_date: user.createdAt,
-      sponsor_id: user.referred_by,
-      sponsor_name: sponsorMap.get(user.referred_by),
-      referral_id: user.sponsor_id,
-      referral_username: user.username,
-      package: user.package,
-      level: user.level,
-    }));
+      const users = await this.userModel
+        .find({ referred_by: { $in: currentLevelSponsorIds } })
+        .exec();
+
+      for (const user of users) {
+        if (visitedSponsorIds.has(user.sponsor_id)) continue;
+
+        visitedSponsorIds.add(user.sponsor_id);
+
+        if (level > 1) {
+          // <-- Only add if level is greater than 1
+          result.push({
+            registration_date: user.createdAt,
+            sponsor_id: user.sponsor_id,
+            sponsor_name: user.username,
+            referral_id: user.referred_by,
+            package: user.package ?? "",
+            level: level,
+          });
+        }
+
+        nextLevelSponsorIds.push(user.sponsor_id);
+      }
+
+      currentLevelSponsorIds = nextLevelSponsorIds;
+      level++;
+    }
+
+    return result;
   }
 
   async updateProfile(
@@ -89,63 +105,156 @@ export class UsersService {
     };
   }
 
-  async setUserActivation(sponsor_id: string, isActive: boolean): Promise<User> {
+  async setUserActivation(
+    sponsor_id: string,
+    isActive: boolean,
+  ): Promise<User> {
     const user = await this.userModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { is_active: isActive } },
       { new: true },
     );
-  
+
     if (!user) {
-      throw new NotFoundException(`User with sponsor_id ${sponsor_id} not found`);
+      throw new NotFoundException(
+        `User with sponsor_id ${sponsor_id} not found`,
+      );
     }
-  
+
     return user;
   }
-  
+
   async getAllSponsors(): Promise<any> {
     const sponsors = await this.userModel.find().exec();
     return sponsors;
   }
 
-  async updateAmountDeposited(sponsor_id: string, newAmount: any): Promise<any> {
+  async updateAmountDeposited(
+    sponsor_id: string,
+    newAmount: any,
+  ): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
     const updatedAmount = Number(newAmount);
-  
+
     await this.userModel.updateOne(
       { sponsor_id },
-      { $set: { amount_deposited: updatedAmount.toString() } }
+      { $set: { amount_deposited: updatedAmount.toString() } },
     );
-  
+
     const updatedUser = await this.userModel.findOne({ sponsor_id });
-  
+
     return {
       status: "success",
       message: "Amount deposited updated successfully",
       data: updatedUser,
     };
-  }  
+  }
 
   async updatePackage(sponsor_id: string, newPackage: any): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
     if (!user) {
-    throw new Error("User with sponsor_id ${sponsor_id} not found");
+      throw new Error("User with sponsor_id ${sponsor_id} not found");
     }
-    
+
     await this.userModel.updateOne(
-    { sponsor_id },
-    { $set: { package: newPackage.toString() } }
+      { sponsor_id },
+      { $set: { package: newPackage.toString() } },
     );
-    
+
     const updatedUser = await this.userModel.findOne({ sponsor_id });
-    
+
     return {
-    status: "success",
-    message: "Package updated successfully",
-    data: updatedUser,
+      status: "success",
+      message: "Package updated successfully",
+      data: updatedUser,
     };
+  }
+
+  async getReferralLevels(
+    sponsor_id: string,
+    maxLevel: number = 10,
+  ): Promise<any> {
+    const levels: Record<number, any[]> = {};
+    let currentLevelSponsorIds: string[] = [sponsor_id];
+
+    for (let level = 1; level <= maxLevel; level++) {
+      const users = await this.userModel
+        .find({
+          referred_by: { $in: currentLevelSponsorIds },
+        })
+        .exec();
+
+      if (users.length === 0) break;
+
+      // Update each user's level field in DB
+      for (const user of users) {
+        await this.userModel.updateOne(
+          { sponsor_id: user.sponsor_id },
+          { $set: { level } },
+        );
+      }
+
+      levels[level] = users.map((user) => ({
+        level,
+        registration_date: user.createdAt,
+        sponsor_id: user.sponsor_id,
+        referral_id: user.referred_by,
+        username: user.username,
+        package: user.package,
+        is_active: user.is_active,
+      }));
+
+      // Prepare for next level
+      currentLevelSponsorIds = users.map((u) => u.sponsor_id);
     }
+
+    return levels;
+  }
+
+  async calculateSponsorChainLevelIncome(sponsor_id: string, amount: number) {
+    const percentages = [25, 17, 12, 10, 8, 7, 6, 5, 5, 5];
+  
+    const result: {
+      level: number;
+      sponsor_id: string | null;
+      sponsor_name: string;
+      percentage: string;
+      income: number;
+    }[] = [];
+  
+    let currentSponsorId = sponsor_id;
+    let level = 1;
+  
+    while (currentSponsorId && level <= percentages.length) {
+      const user = await this.userModel
+        .findOne({ sponsor_id: currentSponsorId })
+        .exec();
+      if (!user) break;
+  
+      const referredBy = user.referred_by;
+      const income = (amount * percentages[level - 1]) / 100;
+  
+      result.push({
+        level,
+        sponsor_id: referredBy,
+        sponsor_name: user.username,
+        percentage: `${percentages[level - 1]}%`,
+        income,
+      });
+  
+      currentSponsorId = referredBy;
+      level++;
+    }
+  
+    const totalIncome = result.reduce((sum, item) => sum + item.income, 0);
+  
+    return {
+      amount,
+      totalIncome,
+      breakdown: result,
+    };
+  }  
 }
