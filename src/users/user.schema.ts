@@ -27,7 +27,7 @@ export class User extends Document {
   @Prop({ required: false })
   level?: number;
 
-  @Prop({ required: false })
+  @Prop({ required: true })
   profit?: string;
 
   @Prop({ default: '0' })
