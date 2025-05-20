@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./user.schema";
+import { MailService } from "./mail.service";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private mailService: MailService,
+  ) {}
 
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).exec();
@@ -28,7 +32,15 @@ export class UsersService {
     phone: string;
   }) {
     const newUser = new this.userModel(data);
-    return newUser.save();
+    const savedUser = await newUser.save();
+
+    await this.mailService.sendWelcomeEmail(
+      savedUser.email,
+      savedUser.username,
+      savedUser.sponsor_id,
+    );
+
+    return savedUser;
   }
 
   async getSponsorName(sponsor_id: string): Promise<string | null> {
