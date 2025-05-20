@@ -142,6 +142,7 @@ export class AuthService {
         phone: sponsor.phone,
         user_type: sponsor.user_type,
         referred_by: sponsor.referred_by,
+        profit: sponsor.profit,
       },
     };
   }  
