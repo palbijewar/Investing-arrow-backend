@@ -24,6 +24,7 @@ export class PaymentOptionService {
   async create(file: Express.Multer.File, dto: PaymentOptionDto, user: any) {
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
 
+    // Upload new file to S3
     const uploadResult = await this.s3Service.uploadFile(
       file.buffer,
       this.bucket,
@@ -32,6 +33,33 @@ export class PaymentOptionService {
       "attachment",
     );
 
+    // Check if a payment option with the sponsor_id already exists
+    const existingRecord = await this.paymentOptionModel.findOne({
+      sponsor_id: dto.sponsor_id,
+    });
+
+    if (existingRecord) {
+      const updated = await this.paymentOptionModel.findOneAndUpdate(
+        { sponsor_id: dto.sponsor_id },
+        {
+          $set: {
+            amount: dto.amount,
+            demat_amount: dto.dematAmount,
+            file_path: uploadResult.Location,
+            file_key: uploadResult.Key,
+          },
+        },
+        { new: true },
+      );
+
+      return {
+        status: "success",
+        message: "Existing payment option updated",
+        data: updated,
+      };
+    }
+
+    // Else create new record
     const saved = await this.paymentOptionModel.create({
       amount: dto.amount,
       demat_amount: dto.dematAmount,
@@ -42,6 +70,7 @@ export class PaymentOptionService {
 
     return {
       status: "success",
+      message: "New payment option created",
       data: saved,
     };
   }
@@ -68,32 +97,32 @@ export class PaymentOptionService {
       { sponsor_id },
       { $set: { demat_amount } },
       {
-        new: true,     // return the updated (or created) document
-        upsert: true,  // create if it doesn't exist
-      }
+        new: true, // return the updated (or created) document
+        upsert: true, // create if it doesn't exist
+      },
     );
-  
+
     return {
-      status: 'success',
-      message: 'Demat amount updated or created',
+      status: "success",
+      message: "Demat amount updated or created",
       data: updated,
     };
-  }  
+  }
 
   async updateAmountDeposited(sponsor_id: string, amount: number) {
     const updated = await this.paymentOptionModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { amount } },
       {
-        new: true,     // return the updated (or created) document
-        upsert: true,  // create if it doesn't exist
-      }
+        new: true, // return the updated (or created) document
+        upsert: true, // create if it doesn't exist
+      },
     );
-  
+
     return {
-      status: 'success',
-      message: 'Amount updated or created',
+      status: "success",
+      message: "Amount updated or created",
       data: updated,
     };
-  }  
+  }
 }
