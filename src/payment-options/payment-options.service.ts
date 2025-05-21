@@ -22,8 +22,6 @@ export class PaymentOptionService {
   }
 
   async create(file: Express.Multer.File, dto: PaymentOptionDto, user: any) {
-    const sponsor_id = user.sponsor_id;
-
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
 
     const uploadResult = await this.s3Service.uploadFile(
@@ -37,7 +35,7 @@ export class PaymentOptionService {
     const saved = await this.paymentOptionModel.create({
       amount: dto.amount,
       demat_amount: dto.dematAmount,
-      sponsor_id: sponsor_id,
+      sponsor_id: dto.sponsor_id,
       file_path: uploadResult.Location,
       file_key: uploadResult.Key,
     });

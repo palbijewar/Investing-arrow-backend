@@ -8,6 +8,10 @@ export class PaymentOptionDto {
   @IsNotEmpty()
   @IsNumberString()
   dematAmount: string;
+
+  @IsNotEmpty()
+  @IsNumberString()
+  sponsor_id: string;
 }
 
 export interface UploadResult {
