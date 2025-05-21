@@ -114,6 +114,7 @@ export class AuthService {
         sponsor_id: user.sponsor_id,
         username: user.username,
         package: user.package || "",
+        amount_deposited: user.amount_deposited || "",
         createdAt: user.createdAt,
       })),
     };
@@ -132,6 +133,7 @@ export class AuthService {
         referral_id: user.referral_id,
         referral_username: user.referral_username,
         package: user.package || "",
+        amount_deposited: user.amount_deposited || "",
         level: user.level || "",
       })),
     };
@@ -143,11 +145,11 @@ export class AuthService {
       return { status: "error", message: "Sponsor not found" };
     }
 
-    // Get payment option record to retrieve demat_amount
     const paymentRecord = await this.paymentOptionService
       .getPdfBySponsorId(sponsor_id)
       .catch(() => null);
     const dematAmount = paymentRecord?.data?.demat_amount || null;
+    const amoutDeposited = paymentRecord?.data?.amount || null;
 
     return {
       status: "success",
@@ -160,6 +162,7 @@ export class AuthService {
         referred_by: sponsor.referred_by,
         profit: sponsor.profit,
         demat_amount: dematAmount,
+        deposit_amount: amoutDeposited,
       },
     };
   }

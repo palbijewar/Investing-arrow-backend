@@ -51,11 +51,26 @@ export class UsersService {
     return sponsor ? sponsor.username : null;
   }
 
-  async getReferredSponsors(sponsor_id: string): Promise<User[]> {
-    return this.userModel
+  async getReferredSponsors(sponsor_id: string): Promise<any[]> {
+    const referredUsers = await this.userModel
       .find({ referred_by: sponsor_id })
       .sort({ createdAt: -1 })
       .exec();
+
+    const enrichedUsers = await Promise.all(
+      referredUsers.map(async (user) => {
+        const paymentOption = await this.paymentOptionModel.findOne({
+          sponsor_id: user.sponsor_id,
+        });
+
+        return {
+          ...user.toObject(),
+          amount_deposited: paymentOption?.amount || null,
+        };
+      }),
+    );
+
+    return enrichedUsers;
   }
 
   async getAllLowerLevelReferrals(sponsor_id: string): Promise<any[]> {
@@ -83,14 +98,21 @@ export class UsersService {
             sponsor_id: user.referred_by,
           });
 
+          // Fetch payment option
+          const paymentOption = await this.paymentOptionModel.findOne({
+            sponsor_id: user.sponsor_id,
+          });
+
           result.push({
             registration_date: user.createdAt,
             sponsor_id: user.sponsor_id,
             sponsor_name: user.username,
             referral_id: user.referred_by,
-            referral_username: referralUser?.username || "", // ✅ fix here
-            package: user.package ?? "",
+            referral_username: referralUser?.username || "",
+            amount_deposited: paymentOption?.amount || null,
+            package: user?.package || null,
             level: level,
+            createdAt: user.createdAt,
           });
         }
 

@@ -58,6 +58,7 @@ export class PaymentOptionService {
       data: {
         file_path: record.file_path,
         demat_amount: record.demat_amount,
+        amount: record.amount,
       },
     };
   }
