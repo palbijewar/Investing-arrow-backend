@@ -321,4 +321,133 @@ export class UsersService {
       data: updatedUser,
     };
   }
+
+  async calculateTotalSponsorProfit(sponsor_id: string): Promise<any> {
+    // 1. Get Level 1 sponsors (direct)
+    const level1Sponsors = await this.userModel
+      .find({ referred_by: sponsor_id })
+      .exec();
+
+    const directProfit = level1Sponsors.reduce((sum, user) => {
+      return sum + (parseFloat(user.profit || "0") || 0);
+    }, 0);
+
+    // 2. Get all downline sponsors beyond Level 1
+    const allDownlines = await this.getAllLowerLevelReferrals(sponsor_id); // already skips level 1
+
+    const sponsorIds = allDownlines.map((s) => s.sponsor_id);
+
+    const downlineUsers = await this.userModel
+      .find({ sponsor_id: { $in: sponsorIds } })
+      .exec();
+
+    const downlineProfit = downlineUsers.reduce((sum, user) => {
+      return sum + (parseFloat(user.profit || "0") || 0);
+    }, 0);
+
+    return {
+      sponsor_id,
+      direct_profit: directProfit,
+      downline_profit: downlineProfit,
+      total_profit: directProfit + downlineProfit,
+      total_direct_sponsors: level1Sponsors.length,
+      total_downline_sponsors: downlineUsers.length,
+    };
+  }
+
+  async getLevelWiseProfitDistribution(sponsor_id: string): Promise<any> {
+    const mainUser = await this.userModel.findOne({ sponsor_id }).exec();
+
+    if (!mainUser) {
+      throw new NotFoundException(
+        `User not found for sponsor_id ${sponsor_id}`,
+      );
+    }
+
+    const maxLevels = 10;
+    const levelDistribution: Record<number, any[]> = {};
+    const percentages = [25, 17, 12, 10, 8, 7, 6, 5, 5, 5]; // Level-wise %
+
+    let currentLevelSponsorIds = [sponsor_id];
+    let totalProfit = 0;
+
+    for (let level = 1; level <= maxLevels; level++) {
+      const users = await this.userModel.find({
+        referred_by: { $in: currentLevelSponsorIds },
+      });
+
+      if (users.length === 0) break;
+
+      levelDistribution[level] = [];
+      const levelPercent = percentages[level - 1] ?? 0;
+
+      for (const user of users) {
+        const userProfit = parseFloat(user.profit || "0");
+        const calculatedProfit = userProfit * (levelPercent / 100);
+
+        totalProfit += calculatedProfit;
+
+        levelDistribution[level].push({
+          sponsor_id: user.sponsor_id,
+          sponsor_name: user.username,
+          level,
+          actual_profit: userProfit,
+          profit: parseFloat(calculatedProfit.toFixed(2)), // ✅ Here's the calculated profit
+        });
+      }
+
+      currentLevelSponsorIds = users.map((u) => u.sponsor_id);
+    }
+
+    return {
+      sponsor_id,
+      total_profit: parseFloat(totalProfit.toFixed(2)),
+      distribution: levelDistribution,
+    };
+  }
+
+  async getProfitSummary(sponsor_id: string): Promise<any> {
+    const user = await this.userModel.findOne({ sponsor_id }).exec();
+    if (!user) {
+      throw new NotFoundException(
+        `User with sponsor_id ${sponsor_id} not found`,
+      );
+    }
+  
+    const levelWiseDistribution = await this.getLevelWiseProfitDistribution(sponsor_id);
+  
+    let directActualProfit = 0;
+    let downlineActualProfit = 0;
+    let directPercentageProfit = 0;
+    let downlinePercentageProfit = 0;
+  
+    for (const level in levelWiseDistribution.distribution) {
+      const entries = levelWiseDistribution.distribution[level];
+  
+      for (const entry of entries) {
+        const actualProfit = parseFloat(entry.actual_profit || "0");
+        // Here 'profit' in your distribution is the percentage-based profit
+        const percentageProfit = parseFloat(entry.profit || "0");
+  
+        if (Number(level) === 1) {
+          directActualProfit += actualProfit;
+          directPercentageProfit += percentageProfit;
+        } else {
+          downlineActualProfit += actualProfit;
+          downlinePercentageProfit += percentageProfit;
+        }
+      }
+    }
+  
+    return {
+      sponsor_id,
+      direct_actual_profit: directActualProfit,
+      downline_actual_profit: downlineActualProfit,
+      direct_percentage_profit: directPercentageProfit,
+      downline_percentage_profit: downlinePercentageProfit,
+      total_actual_profit: directActualProfit + downlineActualProfit,
+      total_percentage_profit: directPercentageProfit + downlinePercentageProfit,
+    };
+  }
+  
 }

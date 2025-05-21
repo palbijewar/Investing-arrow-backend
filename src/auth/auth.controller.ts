@@ -144,4 +144,25 @@ export class AuthController {
     );
     return { status: "success", data: levels };
   }
+
+  @Get("users/profit/:sponsor_id")
+  async calculateTotalSponsorProfit(@Param("sponsor_id") sponsor_id: string) {
+    const levels =
+      await this.usersService.calculateTotalSponsorProfit(sponsor_id);
+    return { status: "success", data: levels };
+  }
+  
+  @Get("users/profit-distribution/:sponsor_id")
+  async getProfitDistribution(@Param("sponsor_id") sponsor_id: string) {
+    const levels =
+      await this.usersService.getLevelWiseProfitDistribution(sponsor_id);
+    return { status: "success", data: levels };
+  }
+
+  @Get("users/profit-summary/:sponsor_id")
+  async getProfitSummary(@Param("sponsor_id") sponsor_id: string) {
+    const levels =
+      await this.usersService.getProfitSummary(sponsor_id);
+    return { status: "success", data: levels };
+  }
 }
