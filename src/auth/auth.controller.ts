@@ -98,16 +98,6 @@ export class AuthController {
     return { status: "success", data: sponsors };
   }
 
-  @Patch("amount-deposited/:sponsor_id")
-  async updateAmount(
-    @Param("sponsor_id") sponsor_id: string,
-    @Body() data: any,
-  ) {
-    const amount = Number(data.amount_deposited);
-
-    return this.usersService.updateAmountDeposited(sponsor_id, amount);
-  }
-
   @Patch("package/:sponsor_id")
   async updatePackage(
     @Param("sponsor_id") sponsor_id: string,

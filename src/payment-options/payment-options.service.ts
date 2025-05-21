@@ -78,4 +78,21 @@ export class PaymentOptionService {
       data: updated,
     };
   }  
+
+  async updateAmountDeposited(sponsor_id: string, amount: number) {
+    const updated = await this.paymentOptionModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { amount } },
+      {
+        new: true,     // return the updated (or created) document
+        upsert: true,  // create if it doesn't exist
+      }
+    );
+  
+    return {
+      status: 'success',
+      message: 'Amount updated or created',
+      data: updated,
+    };
+  }  
 }

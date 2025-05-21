@@ -78,7 +78,6 @@ export class UsersService {
         visitedSponsorIds.add(user.sponsor_id);
 
         if (level > 1) {
-          // <-- Only add if level is greater than 1
           result.push({
             registration_date: user.createdAt,
             sponsor_id: user.sponsor_id,
@@ -151,6 +150,7 @@ export class UsersService {
         return {
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
+          amount_deposited: paymentOption?.amount || null,
         };
       }),
     );

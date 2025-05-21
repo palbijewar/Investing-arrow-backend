@@ -49,4 +49,15 @@ export class PaymentOptionController {
       demat_amount,
     );
   }
+
+  @Patch(":sponsor_id/deposit-amount")
+  async updateAmountDeposited(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body("amount") amount: number,
+  ) {
+    return this.paymentOptionService.updateAmountDeposited(
+      sponsor_id,
+      amount,
+    );
+  }
 }
