@@ -3,12 +3,15 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./user.schema";
 import { MailService } from "./mail.service";
+import { PaymentOption } from "src/payment-options/payment-options.schema";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private mailService: MailService,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    private readonly mailService: MailService,
+    @InjectModel(PaymentOption.name)
+    private readonly paymentOptionModel: Model<PaymentOption>,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -136,10 +139,24 @@ export class UsersService {
     return user;
   }
 
-  async getAllSponsors(): Promise<any> {
+  async getAllSponsors(): Promise<any[]> {
     const sponsors = await this.userModel.find().exec();
-    return sponsors;
-  }
+  
+    const enrichedSponsors = await Promise.all(
+      sponsors.map(async (sponsor) => {
+        const paymentOption = await this.paymentOptionModel.findOne({
+          sponsor_id: sponsor.sponsor_id, 
+        });
+  
+        return {
+          ...sponsor.toObject(),
+          demat_amount: paymentOption?.demat_amount || null,
+        };
+      }),
+    );
+  
+    return enrichedSponsors;
+  }  
 
   async updateAmountDeposited(
     sponsor_id: string,
