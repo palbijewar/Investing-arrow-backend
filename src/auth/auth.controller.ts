@@ -7,6 +7,7 @@ import {
   Param,
   Put,
   Patch,
+  Delete,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignupDto } from "./dto/signup.dto";
@@ -151,7 +152,7 @@ export class AuthController {
       await this.usersService.calculateTotalSponsorProfit(sponsor_id);
     return { status: "success", data: levels };
   }
-  
+
   @Get("users/profit-distribution/:sponsor_id")
   async getProfitDistribution(@Param("sponsor_id") sponsor_id: string) {
     const levels =
@@ -161,8 +162,13 @@ export class AuthController {
 
   @Get("users/profit-summary/:sponsor_id")
   async getProfitSummary(@Param("sponsor_id") sponsor_id: string) {
-    const levels =
-      await this.usersService.getProfitSummary(sponsor_id);
+    const levels = await this.usersService.getProfitSummary(sponsor_id);
     return { status: "success", data: levels };
+  }
+
+  @Delete("users/sponsor/:sponsor_id")
+  async deleteSponsor(@Param("sponsor_id") sponsor_id: string) {
+    const res = await this.usersService.deleteSponsor(sponsor_id);
+    return { status: "success", data: res };
   }
 }

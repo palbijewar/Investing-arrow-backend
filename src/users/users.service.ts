@@ -413,22 +413,23 @@ export class UsersService {
         `User with sponsor_id ${sponsor_id} not found`,
       );
     }
-  
-    const levelWiseDistribution = await this.getLevelWiseProfitDistribution(sponsor_id);
-  
+
+    const levelWiseDistribution =
+      await this.getLevelWiseProfitDistribution(sponsor_id);
+
     let directActualProfit = 0;
     let downlineActualProfit = 0;
     let directPercentageProfit = 0;
     let downlinePercentageProfit = 0;
-  
+
     for (const level in levelWiseDistribution.distribution) {
       const entries = levelWiseDistribution.distribution[level];
-  
+
       for (const entry of entries) {
         const actualProfit = parseFloat(entry.actual_profit || "0");
         // Here 'profit' in your distribution is the percentage-based profit
         const percentageProfit = parseFloat(entry.profit || "0");
-  
+
         if (Number(level) === 1) {
           directActualProfit += actualProfit;
           directPercentageProfit += percentageProfit;
@@ -438,7 +439,7 @@ export class UsersService {
         }
       }
     }
-  
+
     return {
       sponsor_id,
       direct_actual_profit: directActualProfit,
@@ -447,5 +448,32 @@ export class UsersService {
       downline_percentage_profit: downlinePercentageProfit,
     };
   }
-  
+
+  async deleteSponsor(sponsor_id: string): Promise<any> {
+    const user = await this.userModel.findOne({ sponsor_id });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with sponsor_id ${sponsor_id} not found`,
+      );
+    }
+
+    // Optional: Check if the sponsor has any referrals
+    const hasReferrals = await this.userModel.exists({
+      referred_by: sponsor_id,
+    });
+    if (hasReferrals) {
+      return {
+        status: "failed",
+        message: `Cannot delete sponsor ${sponsor_id} because they have referrals.`,
+      };
+    }
+
+    await this.userModel.deleteOne({ sponsor_id });
+
+    return {
+      status: "success",
+      message: `Sponsor with sponsor_id ${sponsor_id} has been deleted.`,
+    };
+  }
 }
