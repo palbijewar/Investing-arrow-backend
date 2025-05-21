@@ -445,8 +445,6 @@ export class UsersService {
       downline_actual_profit: downlineActualProfit,
       direct_percentage_profit: directPercentageProfit,
       downline_percentage_profit: downlinePercentageProfit,
-      total_actual_profit: directActualProfit + downlineActualProfit,
-      total_percentage_profit: directPercentageProfit + downlinePercentageProfit,
     };
   }
   
