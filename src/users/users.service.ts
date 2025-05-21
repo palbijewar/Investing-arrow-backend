@@ -78,11 +78,17 @@ export class UsersService {
         visitedSponsorIds.add(user.sponsor_id);
 
         if (level > 1) {
+          // Fetch referral username
+          const referralUser = await this.userModel.findOne({
+            sponsor_id: user.referred_by,
+          });
+
           result.push({
             registration_date: user.createdAt,
             sponsor_id: user.sponsor_id,
             sponsor_name: user.username,
             referral_id: user.referred_by,
+            referral_username: referralUser?.username || "", // ✅ fix here
             package: user.package ?? "",
             level: level,
           });
@@ -140,13 +146,13 @@ export class UsersService {
 
   async getAllSponsors(): Promise<any[]> {
     const sponsors = await this.userModel.find().exec();
-  
+
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
         const paymentOption = await this.paymentOptionModel.findOne({
-          sponsor_id: sponsor.sponsor_id, 
+          sponsor_id: sponsor.sponsor_id,
         });
-  
+
         return {
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
@@ -154,9 +160,9 @@ export class UsersService {
         };
       }),
     );
-  
+
     return enrichedSponsors;
-  }  
+  }
 
   async updateAmountDeposited(
     sponsor_id: string,

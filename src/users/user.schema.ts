@@ -30,9 +30,6 @@ export class User extends Document {
   @Prop({ default: '0' })
   profit?: string;
 
-  @Prop({ default: '0' })
-  amount_deposited: string;
-
   @Prop({ default: "default" })
   user_type: string;
 
