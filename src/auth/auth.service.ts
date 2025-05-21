@@ -3,35 +3,45 @@ import {
   BadRequestException,
   UnauthorizedException,
   Inject,
-} from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { SignupDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
-import { ForgotPasswordDto } from './dto/forgotpass.dto';
-import * as admin from 'firebase-admin'; 
+} from "@nestjs/common";
+import { UsersService } from "../users/users.service";
+import { SignupDto } from "./dto/signup.dto";
+import { LoginDto } from "./dto/login.dto";
+import * as bcrypt from "bcrypt";
+import { JwtService } from "@nestjs/jwt";
+import { ForgotPasswordDto } from "./dto/forgotpass.dto";
+import * as admin from "firebase-admin";
+import { PaymentOptionService } from "src/payment-options/payment-options.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private paymentOptionService: PaymentOptionService,
     // @Inject('FIREBASE_ADMIN') private firebase: admin.app.App
   ) {}
 
   async signup(dto: SignupDto) {
-    const { sponsor_id, referred_by, username, email, phone, password, confirm_password } = dto;
+    const {
+      sponsor_id,
+      referred_by,
+      username,
+      email,
+      phone,
+      password,
+      confirm_password,
+    } = dto;
 
     if (password !== confirm_password) {
-      throw new BadRequestException('Passwords do not match');
+      throw new BadRequestException("Passwords do not match");
     }
 
     const existing = await this.usersService.findByEmail(email);
-    if (existing) throw new BadRequestException('Email already registered');
+    if (existing) throw new BadRequestException("Email already registered");
 
     const hash = await bcrypt.hash(password, 10);
-    
+
     await this.usersService.create({
       sponsor_id,
       username,
@@ -41,7 +51,7 @@ export class AuthService {
       referred_by,
     });
 
-    return { status:"success", message: 'User registered successfully' };
+    return { status: "success", message: "User registered successfully" };
   }
 
   async login(dto: LoginDto) {
@@ -49,41 +59,41 @@ export class AuthService {
 
     const user = await this.usersService.findBySponsorID(sponsor_id);
     if (!user)
-      throw new UnauthorizedException('Invalid sponsor ID or password');
+      throw new UnauthorizedException("Invalid sponsor ID or password");
 
     const match = await bcrypt.compare(password, user.password);
     if (!match)
-      throw new UnauthorizedException('Invalid sponsor ID or password');
+      throw new UnauthorizedException("Invalid sponsor ID or password");
 
     const payload = { sub: user._id, sponsor_id: user.sponsor_id };
     const token = this.jwtService.sign(payload);
 
-    return { status:"success",data:{access_token: token }};
+    return { status: "success", data: { access_token: token } };
   }
 
   async getSponsorName(sponsor_id: string): Promise<any> {
     const sponsor = await this.usersService.findBySponsorID(sponsor_id);
     if (!sponsor) {
-      return { status: 'error', message: 'Sponsor not found' };
+      return { status: "error", message: "Sponsor not found" };
     }
-  
+
     return {
-      status: 'success',
+      status: "success",
       data: {
         sponsor_id: sponsor.sponsor_id,
         username: sponsor.username,
       },
     };
-  }  
+  }
 
   async forgotPassword(dto: ForgotPasswordDto) {
     const { email } = dto;
-  
+
     return {
-      status: 'success',
-      message: 'Password reset successful',
+      status: "success",
+      message: "Password reset successful",
     };
-  }  
+  }
 
   // async sendResetPasswordLink(email: string) {
   //   try {
@@ -98,43 +108,49 @@ export class AuthService {
   async getReferredSponsors(sponsor_id: string) {
     const users = await this.usersService.getReferredSponsors(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       count: users.length,
-      data: users.map(user => ({
+      data: users.map((user) => ({
         sponsor_id: user.sponsor_id,
         username: user.username,
-        package: user.package || '',
+        package: user.package || "",
         createdAt: user.createdAt,
       })),
     };
-  }  
+  }
 
   async getSecondLevelReferrals(sponsor_id: string) {
     const users = await this.usersService.getAllLowerLevelReferrals(sponsor_id);
-  
+
     return {
-      status: 'success',
+      status: "success",
       count: users.length,
-      data: users.map(user => ({
+      data: users.map((user) => ({
         registration_date: user.registration_date,
         sponsor_id: user.sponsor_id,
         sponsor_name: user.sponsor_name,
         referral_id: user.referral_id,
         referral_username: user.referral_username,
-        package: user.package || '',
-        level: user.level || '',
+        package: user.package || "",
+        level: user.level || "",
       })),
     };
-  }  
+  }
 
   async getSponsorDetails(sponsor_id: string) {
     const sponsor = await this.usersService.getSponsorDetails(sponsor_id);
     if (!sponsor) {
-      return { status: 'error', message: 'Sponsor not found' };
+      return { status: "error", message: "Sponsor not found" };
     }
-  
+
+    // Get payment option record to retrieve demat_amount
+    const paymentRecord = await this.paymentOptionService
+      .getPdfBySponsorId(sponsor_id)
+      .catch(() => null);
+    const dematAmount = paymentRecord?.data?.demat_amount || null;
+
     return {
-      status: 'success',
+      status: "success",
       data: {
         sponsor_id: sponsor.sponsor_id,
         username: sponsor.username,
@@ -143,7 +159,8 @@ export class AuthService {
         user_type: sponsor.user_type,
         referred_by: sponsor.referred_by,
         profit: sponsor.profit,
+        demat_amount: dematAmount,
       },
     };
-  }  
+  }
 }

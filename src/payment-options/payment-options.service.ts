@@ -51,13 +51,16 @@ export class PaymentOptionService {
   async getPdfBySponsorId(sponsor_id: string) {
     const record = await this.paymentOptionModel.findOne({ sponsor_id });
 
-    if (!record || !record.file_path) {
+    if (!record) {
       throw new NotFoundException("PDF not found for this sponsor ID");
     }
-  
+
     return {
       status: "success",
-      data:record.file_path
+      data: {
+        file_path: record.file_path,
+        demat_amount: record.demat_amount,
+      },
     };
   }
 }
