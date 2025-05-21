@@ -63,4 +63,18 @@ export class PaymentOptionService {
       },
     };
   }
+
+  async updateDematAmount(sponsor_id: string, demat_amount: number) {
+    const updated = await this.paymentOptionModel.findOneAndUpdate(
+      { sponsor_id },
+      { demat_amount },
+      { new: true }
+    );
+
+    if (!updated) {
+      throw new NotFoundException(`No payment option found for sponsor ID: ${sponsor_id}`);
+    }
+
+    return { status: 'success', message: 'Demat amount updated', data: updated };
+  }
 }

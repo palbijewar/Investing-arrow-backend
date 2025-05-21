@@ -9,12 +9,13 @@ import {
   Get,
   Param,
   Res,
+  Patch,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PaymentOptionService } from "./payment-options.service";
 import { PaymentOptionDto } from "./dto/payment-options.dto";
 import { AuthGuard } from "@nestjs/passport";
-import { Response } from 'express';
+import { Response } from "express";
 
 @Controller("payment-options")
 export class PaymentOptionController {
@@ -33,7 +34,19 @@ export class PaymentOptionController {
 
   @Get("pdf/:sponsor_id")
   async getPdf(@Param("sponsor_id") sponsor_id: string) {
-    const result = await this.paymentOptionService.getPdfBySponsorId(sponsor_id);
+    const result =
+      await this.paymentOptionService.getPdfBySponsorId(sponsor_id);
     return result;
+  }
+
+  @Patch(":sponsor_id/demat-amount")
+  async updateDematAmount(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body("demat_amount") demat_amount: number,
+  ) {
+    return this.paymentOptionService.updateDematAmount(
+      sponsor_id,
+      demat_amount,
+    );
   }
 }
