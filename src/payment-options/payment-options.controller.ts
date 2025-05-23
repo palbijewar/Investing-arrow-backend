@@ -29,7 +29,7 @@ export class PaymentOptionController {
     @Body() dto: PaymentOptionDto,
     @Req() req,
   ) {
-    return this.paymentOptionService.create(file, dto, req.user);
+    return this.paymentOptionService.create(file, dto, req.user.sponsor_id);
   }
 
   @Get("pdf/:sponsor_id")
@@ -55,9 +55,11 @@ export class PaymentOptionController {
     @Param("sponsor_id") sponsor_id: string,
     @Body("amount") amount: number,
   ) {
-    return this.paymentOptionService.updateAmountDeposited(
-      sponsor_id,
-      amount,
-    );
+    return this.paymentOptionService.updateAmountDeposited(sponsor_id, amount);
+  }
+
+  @Get("history/:sponsor_id")
+  getHistory(@Param("sponsor_id") sponsor_id: string) {
+    return this.paymentOptionService.getSponsorPaymentHistory(sponsor_id);
   }
 }

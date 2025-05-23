@@ -6,11 +6,15 @@ import { PaymentOption, PaymentOptionSchema } from './payment-options.schema';
 import { PaymentOptionService } from './payment-options.service';
 import { PaymentOptionController } from './payment-options.controller';
 import { S3Service } from './s3-config.service';
+import { UsersModule } from 'src/users/users.module';
+import { User, UserSchema } from 'src/users/user.schema';
 
 @Module({
   imports: [
+    UsersModule,
     MongooseModule.forFeature([
       { name: PaymentOption.name, schema: PaymentOptionSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

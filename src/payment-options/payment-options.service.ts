@@ -5,8 +5,7 @@ import { PaymentOption } from "./payment-options.schema";
 import { PaymentOptionDto } from "./dto/payment-options.dto";
 import { S3Service } from "./s3-config.service";
 import { ConfigService } from "@nestjs/config";
-import { Response } from "express";
-import * as path from "path";
+import { User } from "src/users/user.schema";
 
 @Injectable()
 export class PaymentOptionService {
@@ -15,16 +14,21 @@ export class PaymentOptionService {
   constructor(
     @InjectModel(PaymentOption.name)
     private readonly paymentOptionModel: Model<PaymentOption>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     private readonly s3Service: S3Service,
     private readonly configService: ConfigService,
   ) {
     this.bucket = this.configService.get<string>("AWS_BUCKET_NAME")!;
   }
 
-  async create(file: Express.Multer.File, dto: PaymentOptionDto, user: any) {
+  async create(
+    file: Express.Multer.File,
+    dto: PaymentOptionDto,
+    paymentSponsorId: string,
+  ) {
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
 
-    // Upload new file to S3
     const uploadResult = await this.s3Service.uploadFile(
       file.buffer,
       this.bucket,
@@ -33,44 +37,18 @@ export class PaymentOptionService {
       "attachment",
     );
 
-    // Check if a payment option with the sponsor_id already exists
-    const existingRecord = await this.paymentOptionModel.findOne({
-      sponsor_id: dto.sponsor_id,
-    });
-
-    if (existingRecord) {
-      const updated = await this.paymentOptionModel.findOneAndUpdate(
-        { sponsor_id: dto.sponsor_id },
-        {
-          $set: {
-            amount: dto.amount,
-            demat_amount: dto.dematAmount,
-            file_path: uploadResult.Location,
-            file_key: uploadResult.Key,
-          },
-        },
-        { new: true },
-      );
-
-      return {
-        status: "success",
-        message: "Existing payment option updated",
-        data: updated,
-      };
-    }
-
-    // Else create new record
     const saved = await this.paymentOptionModel.create({
       amount: dto.amount,
       demat_amount: dto.dematAmount,
       sponsor_id: dto.sponsor_id,
       file_path: uploadResult.Location,
       file_key: uploadResult.Key,
+      payment_sponsor_id: paymentSponsorId,
     });
 
     return {
       status: "success",
-      message: "New payment option created",
+      message: "New payment record created",
       data: saved,
     };
   }
@@ -123,6 +101,40 @@ export class PaymentOptionService {
       status: "success",
       message: "Amount updated or created",
       data: updated,
+    };
+  }
+
+  async getSponsorPaymentHistory(payment_sponsor_id: string) {
+    const records = await this.paymentOptionModel
+      .find({ payment_sponsor_id })
+      .sort({ createdAt: -1 });
+
+    if (!records.length) {
+      throw new NotFoundException("No payment history found for this sponsor");
+    }
+
+    const data = await Promise.all(
+      records.map(async (record) => {
+        const sponsor = await this.userModel
+          .findOne({ sponsor_id: record.sponsor_id })
+          .select("username")
+          .lean();
+        return {
+          sponsor_id: record.sponsor_id,
+          sponsor_name: sponsor?.username || "Unknown",
+          payment_sponsor_id: record.payment_sponsor_id,
+          amount: record.amount,
+          demat_amount: record.demat_amount,
+          file_path: record.file_path,
+          file_key: record.file_key,
+          created_at: record.createdAt,
+        };
+      }),
+    );
+
+    return {
+      status: "success",
+      data,
     };
   }
 }

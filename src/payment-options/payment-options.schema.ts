@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { Document } from "mongoose";
 
 @Schema({ timestamps: true })
 export class PaymentOption extends Document {
@@ -13,10 +13,16 @@ export class PaymentOption extends Document {
   sponsor_id: string;
 
   @Prop({ required: true })
+  payment_sponsor_id: string;
+
+  @Prop({ required: true })
   file_path: string;
 
   @Prop({ required: true })
   file_key: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const PaymentOptionSchema = SchemaFactory.createForClass(PaymentOption);
