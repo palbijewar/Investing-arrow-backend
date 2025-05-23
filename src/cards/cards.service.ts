@@ -28,48 +28,76 @@ export class CardsService {
   // 2. Downline bot count
   async getActiveDownlineUsers(sponsor_id: string): Promise<any> {
     let downline: User[] = [];
-  
-    const directReferrals = await this.userModel.find({
-      referred_by: sponsor_id,
-    }).lean();
-  
-    const directSponsorIds = directReferrals.map(user => user.sponsor_id);
-  
+
+    const directReferrals = await this.userModel
+      .find({
+        referred_by: sponsor_id,
+      })
+      .lean();
+
+    const directSponsorIds = directReferrals.map((user) => user.sponsor_id);
+
     let nextSponsorIds = [...directSponsorIds];
-  
+
     while (nextSponsorIds.length > 0) {
-      const users = await this.userModel.find({
-        referred_by: { $in: nextSponsorIds },
-        is_active: true,
-      }).lean();
-  
+      const users = await this.userModel
+        .find({
+          referred_by: { $in: nextSponsorIds },
+          is_active: true,
+        })
+        .lean();
+
       downline = downline.concat(users);
       nextSponsorIds = users.map((user) => user.sponsor_id);
     }
-  
+
     return downline;
-  } 
+  }
 
   // 1. Direct Portfolio Investment
-async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
-  const directUsers = await this.userModel
-  .find({ referred_by: sponsor_id, is_active: true })
-  .select('package')
-  .exec();
-  
-  const total = directUsers.reduce((sum, user) => sum + Number(user.package || 0), 0);
-  return total;
-  }
-  
-  // 2. Downline Portfolio Investment
-  async botDownlinePortfolioInvestment(sponsor_id: string): Promise<number> {
-  const downlineUsers = await this.getActiveDownlineUsers(sponsor_id);
-  
-  const total = downlineUsers.reduce((sum, user) => sum + Number(user.package || 0), 0);
-  return total;
+  async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
+    const users = await this.userModel.find({
+      referred_by: sponsor_id,
+      is_active: true,
+    });
+
+    const userIds = users.map((user) => user.sponsor_id);
+
+    const directUsersPaymentOptions = await this.paymentOptionModel
+      .find({
+        sponsor_id: { $in: userIds },
+      })
+      .select("amount");
+
+    const total = directUsersPaymentOptions.reduce(
+      (sum, payment) => sum + Number(payment.amount || 0),
+      0,
+    );
+
+    return total;
   }
 
-// 1. Direct portfolio Investment
+  // 2. Downline Portfolio Investment (fix: use downline sponsor_ids and paymentOptionModel)
+  async botDownlinePortfolioInvestment(sponsor_id: string): Promise<number> {
+    const downlineUsers = await this.getActiveDownlineUsers(sponsor_id);
+    const sponsorIds = downlineUsers.map((user) => user.sponsor_id);
+
+    if (sponsorIds.length === 0) return 0;
+
+    const paymentOptions = await this.paymentOptionModel
+      .find({ sponsor_id: { $in: sponsorIds } })
+      .select("amount")
+      .lean()
+      .exec();
+
+    const total = paymentOptions.reduce(
+      (sum, p) => sum + Number(p.amount || 0),
+      0,
+    );
+    return total;
+  }
+
+  // 1. Direct portfolio Investment
   async directPortfolioInvestment(sponsor_id: string): Promise<number> {
     const directUsers = await this.userModel
       .find({ referred_by: sponsor_id })
@@ -90,7 +118,7 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
 
     return result[0]?.total || 0;
   }
-// 2. Downline portfolio Investment
+  // 2. Downline portfolio Investment
   async getDownlinePortfolioInvestment(sponsor_id: string): Promise<number> {
     const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
     const userIds = downlineUsers.map((u) => u.sponsor_id.toString());
@@ -118,7 +146,7 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
     const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
     return downlineUsers.length;
   }
-  
+
   async getTotalPaymentsBySponsor(sponsor_id: string): Promise<number> {
     return this.paymentOptionModel.countDocuments({ sponsor_id });
   }
@@ -187,46 +215,50 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
       level++;
     }
 
-    return  {
-        total_income: totalIncome,
-        level_income: level
-      };
+    return {
+      total_income: totalIncome,
+      level_income: level,
+    };
   }
 
-   async getAllDownlineUsers(sponsor_id: string): Promise<any> {
+  async getAllDownlineUsers(sponsor_id: string): Promise<any> {
     let downline: User[] = [];
-  
-    const directReferrals = await this.userModel.find({
-      referred_by: sponsor_id,
-    }).lean();
-  
-    const directSponsorIds = directReferrals.map(user => user.sponsor_id);
-  
+
+    const directReferrals = await this.userModel
+      .find({
+        referred_by: sponsor_id,
+      })
+      .lean();
+
+    const directSponsorIds = directReferrals.map((user) => user.sponsor_id);
+
     let nextSponsorIds = [...directSponsorIds];
-  
+
     while (nextSponsorIds.length > 0) {
-      const users = await this.userModel.find({
-        referred_by: { $in: nextSponsorIds },
-      }).lean();
-  
+      const users = await this.userModel
+        .find({
+          referred_by: { $in: nextSponsorIds },
+        })
+        .lean();
+
       downline = downline.concat(users);
       nextSponsorIds = users.map((user) => user.sponsor_id);
     }
-  
+
     return downline;
-  }   
+  }
 
   async getRankIncome(sponsor_id: string): Promise<any> {
     const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
-  
+
     const aiRobotBusiness = downlineUsers.reduce((sum, user) => {
       return sum + (user.package ? Number(user.package) : 0);
     }, 0);
-  
+
     if (aiRobotBusiness < 2000) {
       return { rank: null, income: 0, aiRobotBusiness };
     }
-  
+
     // Step 1: Count how many direct referrals qualify at each MASTER level
     const downlineMasterRanks = await Promise.all(
       downlineUsers.map(async (user) => {
@@ -234,87 +266,93 @@ async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
           sponsor_id: user.sponsor_id,
           rank: await this.getUserMasterRank(user.sponsor_id),
         };
-      })
+      }),
     );
-  
-    const countByRank = downlineMasterRanks.reduce((acc, u) => {
-      if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  
+
+    const countByRank = downlineMasterRanks.reduce(
+      (acc, u) => {
+        if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
     // Step 2: Determine highest MASTER level this sponsor qualifies for
     const masterRanks = [
-      { rank: 'M1', required: 3, royalty: 0.25 },
-      { rank: 'M2', required: 3, royalty: 0.25 },
-      { rank: 'M3', required: 4, royalty: 0.15 },
-      { rank: 'M4', required: 5, royalty: 0.10 },
-      { rank: 'M5', required: 6, royalty: 0.10 },
-      { rank: 'M6', required: 7, royalty: 0.10 },
-      { rank: 'M7', required: 0, royalty: 0.05 },
+      { rank: "M1", required: 3, royalty: 0.25 },
+      { rank: "M2", required: 3, royalty: 0.25 },
+      { rank: "M3", required: 4, royalty: 0.15 },
+      { rank: "M4", required: 5, royalty: 0.1 },
+      { rank: "M5", required: 6, royalty: 0.1 },
+      { rank: "M6", required: 7, royalty: 0.1 },
+      { rank: "M7", required: 0, royalty: 0.05 },
     ];
-  
+
     let qualifiedRank: string | null = null;
     let royaltyPercent = 0;
-  
+
     for (let i = masterRanks.length - 1; i >= 0; i--) {
       const { rank, required, royalty } = masterRanks[i];
-      if (rank === 'M7' || (countByRank[rank] || 0) >= required) {
+      if (rank === "M7" || (countByRank[rank] || 0) >= required) {
         qualifiedRank = rank;
         royaltyPercent = royalty;
         break;
       }
     }
-  
-    const totalRoyalty = aiRobotBusiness * 0.10 * royaltyPercent;
-  
+
+    const totalRoyalty = aiRobotBusiness * 0.1 * royaltyPercent;
+
     return {
       aiRobotBusiness,
       rank: qualifiedRank,
       royaltyPercent,
       income: totalRoyalty,
     };
-  }  
+  }
 
   async getUserMasterRank(sponsor_id: string): Promise<string | null> {
     const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
-  
+
     const aiRobotBusiness = downlineUsers.reduce((sum, user) => {
       return sum + (user.package ? Number(user.package) : 0);
     }, 0);
-  
+
     if (aiRobotBusiness < 2000) return null;
-  
+
     const downlineMasterRanks = await Promise.all(
       downlineUsers.map(async (user) => {
         return {
           sponsor_id: user.sponsor_id,
           rank: await this.getUserMasterRank(user.sponsor_id),
         };
-      })
+      }),
     );
-  
-    const countByRank = downlineMasterRanks.reduce((acc, u) => {
-      if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  
+
+    const countByRank = downlineMasterRanks.reduce(
+      (acc, u) => {
+        if (u.rank) acc[u.rank] = (acc[u.rank] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
     const masterRanks = [
-      { rank: 'M1', required: 3 },
-      { rank: 'M2', required: 3 },
-      { rank: 'M3', required: 4 },
-      { rank: 'M4', required: 5 },
-      { rank: 'M5', required: 6 },
-      { rank: 'M6', required: 7 },
-      { rank: 'M7', required: 0 },
+      { rank: "M1", required: 3 },
+      { rank: "M2", required: 3 },
+      { rank: "M3", required: 4 },
+      { rank: "M4", required: 5 },
+      { rank: "M5", required: 6 },
+      { rank: "M6", required: 7 },
+      { rank: "M7", required: 0 },
     ];
-  
+
     for (let i = masterRanks.length - 1; i >= 0; i--) {
       const { rank, required } = masterRanks[i];
-      if (rank === 'M7' || (countByRank[rank] || 0) >= required) {
+      if (rank === "M7" || (countByRank[rank] || 0) >= required) {
         return rank;
       }
     }
-  
+
     return null;
-  }  
+  }
 }

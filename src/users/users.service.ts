@@ -521,4 +521,52 @@ export class UsersService {
       message: `Sponsor with sponsor_id ${sponsor_id} has been deleted.`,
     };
   }
+
+  async distributeProfit(fromSponsorId: string, amount: string): Promise<any> {
+    const percentages = [25, 17, 12, 10, 8, 7, 6, 5, 5, 5];
+    const distributionPool = parseFloat(amount) * 0.15;
+    let currentSponsorId = fromSponsorId;
+    let level = 0;
+    console.log({ distributionPool });
+    await this.userModel.updateOne(
+      { sponsor_id: fromSponsorId },
+      { $set: { profit: distributionPool * 0.25 } },
+    );
+    while (currentSponsorId && level < percentages.length) {
+      const user = await this.userModel.findOne({
+        sponsor_id: currentSponsorId,
+      });
+      if (!user || !user.referred_by) break;
+
+      const parentSponsor = await this.userModel.findOne({
+        sponsor_id: user.referred_by,
+      });
+
+      if (!parentSponsor) break;
+
+      const profitAmount = (distributionPool * percentages[level]) / 100;
+
+      // Update profit
+      const currentProfit = Number(parentSponsor.profit || 0);
+      const updatedProfit = currentProfit + profitAmount;
+
+      await this.userModel.updateOne(
+        { sponsor_id: parentSponsor.sponsor_id },
+        { $set: { profit: updatedProfit } },
+      );
+
+      console.log(
+        `Level ${level + 1} | ${parentSponsor.username} earned ₹${profitAmount} profit`,
+      );
+
+      // Move up the chain
+      currentSponsorId = parentSponsor.sponsor_id;
+      level++;
+    }
+
+    return {
+      status: "success",
+      message: `Profit distributed successfully from ${fromSponsorId}`,
+    };
+  }
 }

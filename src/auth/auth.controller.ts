@@ -161,4 +161,12 @@ export class AuthController {
     const res = await this.usersService.deleteSponsor(sponsor_id);
     return { status: "success", data: res };
   }
+
+  @Post("users/distribute-profit/:sponsor_id")
+  async handleDistributeProfit(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body("profit") profit: string,
+  ) {
+    return this.usersService.distributeProfit(sponsor_id, profit);
+  }
 }
