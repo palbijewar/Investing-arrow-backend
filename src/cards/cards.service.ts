@@ -100,7 +100,7 @@ export class CardsService {
   // 1. Direct portfolio Investment
   async directPortfolioInvestment(sponsor_id: string): Promise<number> {
     const directUsers = await this.userModel
-      .find({ referred_by: sponsor_id })
+      .find({ referred_by: sponsor_id, is_active: true })
       .exec();
     const userIds = directUsers.map((user) => user.sponsor_id.toString());
 
@@ -227,6 +227,7 @@ export class CardsService {
     const directReferrals = await this.userModel
       .find({
         referred_by: sponsor_id,
+        is_active: true,
       })
       .lean();
 
@@ -238,6 +239,7 @@ export class CardsService {
       const users = await this.userModel
         .find({
           referred_by: { $in: nextSponsorIds },
+          is_active: true,
         })
         .lean();
 
