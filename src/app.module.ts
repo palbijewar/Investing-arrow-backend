@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { BrokerDetailsModule } from './broker-details/broker-details.module';
 import { PaymentOptionsModule } from './payment-options/payment-options.module';
 import { CardsModule } from './cards/cards.module';
+import { GasWalletModule } from './gaswallet/GasWallet.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CardsModule } from './cards/cards.module';
       }),
       inject: [ConfigService],
     }),
+    GasWalletModule,
     BrokerDetailsModule,
     PaymentOptionsModule,
     CardsModule,

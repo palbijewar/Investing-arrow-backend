@@ -165,8 +165,8 @@ export class AuthController {
   @Post("users/distribute-profit/:sponsor_id")
   async handleDistributeProfit(
     @Param("sponsor_id") sponsor_id: string,
-    @Body("profit") profit: string,
+    @Body("profit") profit: number,
   ) {
-    return this.usersService.distributeProfit(sponsor_id, profit);
+    return this.usersService.distributeLevelWiseProfit(sponsor_id, profit);
   }
 }
