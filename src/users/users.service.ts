@@ -385,7 +385,6 @@ export class UsersService {
     if (!user) {
       throw new Error("User with sponsor_id ${sponsor_id} not found");
     }
-
     await this.userModel.updateOne(
       { sponsor_id },
       { $set: { profit: newProfit } },
@@ -613,50 +612,53 @@ export class UsersService {
     message: string;
     totalDirectIncome: number;
     totalDownlineIncome: number;
+    totalIncome: number;
   }> {
     const directUsers = await this.getReferredSponsors(userSponsorId);
     const downlineUsers = await this.getAllLowerLevelReferrals(userSponsorId);
-  
+
     let totalDirectIncome = 0;
     let totalDownlineIncome = 0;
-  
+    let totalIncome = 0;
+
     const directSponsorMap = new Map<string, boolean>();
     const downlineSponsorMap = new Map<string, boolean>();
-  
+
     // ✅ Level 1 - Direct users
     for (const user of directUsers) {
       const sponsorId = user.sponsor_id;
       if (directSponsorMap.has(sponsorId)) continue;
-  
+
       directSponsorMap.set(sponsorId, true);
-  
+
       const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
       if (!sponsor) continue;
-  
+
       const levelProfit = sponsor.profit || 0;
       totalDirectIncome += levelProfit;
     }
-  
+
     // ✅ Levels 2–10 - Downline users
     for (const user of downlineUsers) {
       const level = user.level;
       const sponsorId = user.sponsor_id;
       if (level < 2 || level > 10) continue;
       if (downlineSponsorMap.has(sponsorId)) continue;
-  
+
       downlineSponsorMap.set(sponsorId, true);
-  
+
       const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
       if (!sponsor) continue;
-  
+
       const levelProfit = sponsor.profit || 0;
       totalDownlineIncome += levelProfit;
     }
-  
+    totalIncome = totalDirectIncome + totalDownlineIncome;
     return {
       message: "Profit summary calculated successfully",
       totalDirectIncome,
       totalDownlineIncome,
+      totalIncome,
     };
-  }  
+  }
 }
