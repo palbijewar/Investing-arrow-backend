@@ -392,7 +392,7 @@ export class UsersService {
     );
 
     const updatedUser = await this.userModel.findOne({ sponsor_id });
-
+    await this.distributeLevelWiseProfit(sponsor_id, newProfit);
     return {
       status: "success",
       message: "Profit updated successfully",
