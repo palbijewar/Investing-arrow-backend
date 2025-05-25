@@ -150,10 +150,9 @@ export class AuthController {
     return { status: "success", data: levels };
   }
 
-  @Get("users/profit-summary/:sponsor_id")
-  async getProfitSummary(@Param("sponsor_id") sponsor_id: string) {
-    const levels = await this.usersService.getProfitSummary(sponsor_id);
-    return { status: "success", data: levels };
+  @Get("/profits/summary/:sponsorId")
+  async getProfitSummary(@Param("sponsorId") sponsorId: string) {
+    return await this.usersService.getLevelWiseProfit(sponsorId);
   }
 
   @Delete("users/sponsor/:sponsor_id")
