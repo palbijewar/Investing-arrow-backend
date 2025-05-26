@@ -13,7 +13,7 @@ export class UsersService {
     private readonly mailService: MailService,
     @InjectModel(PaymentOption.name)
     private readonly paymentOptionModel: Model<PaymentOption>,
-    @InjectModel(PaymentOption.name)
+    @InjectModel(GasWallet.name)
     private readonly gasWalletModel: Model<GasWallet>,
   ) {}
 
@@ -180,8 +180,6 @@ export class UsersService {
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
-  console.log({paymentOption});
-  console.log({gaswallet});
   
         return {
           ...sponsor.toObject(),
