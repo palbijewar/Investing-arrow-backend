@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 import { User } from "./user.schema";
 import { MailService } from "./mail.service";
 import { PaymentOption } from "src/payment-options/payment-options.schema";
+import { GasWallet } from "src/gaswallet/GasWallet.schema";
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,8 @@ export class UsersService {
     private readonly mailService: MailService,
     @InjectModel(PaymentOption.name)
     private readonly paymentOptionModel: Model<PaymentOption>,
+    @InjectModel(PaymentOption.name)
+    private readonly gasWalletModel: Model<GasWallet>,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -167,24 +170,22 @@ export class UsersService {
   }
 
   async getAllSponsors(is_active?: boolean): Promise<any[]> {
-    const query: any = {};
-    
-    if (typeof is_active === 'boolean') {
-      query.is_active = is_active;
-    }
+    const query = typeof is_active === 'boolean' ? { is_active } : {};
   
     const sponsors = await this.userModel.find(query).exec();
   
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
-        const paymentOption = await this.paymentOptionModel.findOne({
-          sponsor_id: sponsor.sponsor_id,
-        });
+        const [paymentOption, gaswallet] = await Promise.all([
+          this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
+          this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
+        ]);
   
         return {
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
           amount_deposited: paymentOption?.amount || null,
+          gas_wallet_fees: gaswallet?.gas_wallet_amount || null,
         };
       }),
     );
