@@ -180,6 +180,7 @@ export class UsersService {
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
+  console.log({paymentOption});
   console.log({gaswallet});
   
         return {
