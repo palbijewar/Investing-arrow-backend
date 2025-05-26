@@ -92,11 +92,11 @@ export class AuthController {
     };
   }
 
-  @Get('users')
+  @Get("users")
   async getSponsors(@Query('is_active') is_active: string) {
     const parsed = is_active === 'true' ? true : is_active === 'false' ? false : undefined;
     return this.usersService.getAllSponsors(parsed);
-  }
+  }  
 
   @Patch("package/:sponsor_id")
   async updatePackage(
