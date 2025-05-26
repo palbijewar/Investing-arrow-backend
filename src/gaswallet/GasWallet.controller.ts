@@ -12,7 +12,6 @@ import {
 import { GasWalletService } from "./GasWallet.service";
 import { GasWalletDto } from "./dto/GasWallet.dto";
 import { AuthGuard } from "@nestjs/passport";
-import { Response } from "express";
 
 @Controller("gaswallet")
 export class GasWalletController {

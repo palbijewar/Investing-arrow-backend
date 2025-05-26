@@ -380,24 +380,38 @@ export class UsersService {
     };
   }
 
-  async updateProfit(sponsor_id: string, newProfit: any): Promise<any> {
+  async updateProfit(sponsor_id: string, totalProfit: number): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
     if (!user) {
-      throw new Error("User with sponsor_id ${sponsor_id} not found");
+      throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
+  
+    const profitShare = (totalProfit * 15) / 100;
+  
+    const selfProfit = (profitShare * 25) / 100;
+    const newProfit = (user.profit || 0) + selfProfit;
+  
     await this.userModel.updateOne(
       { sponsor_id },
       { $set: { profit: newProfit } },
     );
-
+  
+    const remainingProfit = profitShare - selfProfit;
+    const distributionResult = await this.distributeLevelWiseProfit(
+      sponsor_id,
+      remainingProfit,
+    );
+  
     const updatedUser = await this.userModel.findOne({ sponsor_id });
-    await this.distributeLevelWiseProfit(sponsor_id, newProfit);
+  
     return {
       status: "success",
-      message: "Profit updated successfully",
-      data: updatedUser,
+      message: "Profit updated and distributed successfully",
+      selfProfit: selfProfit,
+      distributedProfit: distributionResult,
+      updatedUser,
     };
-  }
+  }  
 
   async getLevelWiseProfitDistribution(sponsor_id: string): Promise<any> {
     const mainUser = await this.userModel.findOne({ sponsor_id }).exec();
@@ -526,7 +540,6 @@ export class UsersService {
     const downlineUsers = await this.getAllLowerLevelReferrals(userSponsorId);
 
     const LEVEL_PERCENTAGES = [25, 17, 12, 10, 8, 7, 6, 5, 5, 5]; // Level 1–10
-    const profitShare = (totalProfit * 15) / 100;
 
     const distributedProfits: {
       level: number;
@@ -552,7 +565,7 @@ export class UsersService {
       const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
       if (!sponsor) continue;
 
-      const levelProfit = (profitShare * LEVEL_PERCENTAGES[level - 1]) / 100;
+      const levelProfit = (totalProfit * LEVEL_PERCENTAGES[level - 1]) / 100;
       await this.addProfitToSponsor(sponsor.sponsor_id, levelProfit);
 
       totalDirectIncome += levelProfit;
@@ -577,7 +590,7 @@ export class UsersService {
       });
       if (!sponsor) continue;
 
-      const levelProfit = (profitShare * LEVEL_PERCENTAGES[level - 1]) / 100;
+      const levelProfit = (totalProfit * LEVEL_PERCENTAGES[level - 1]) / 100;
       await this.addProfitToSponsor(sponsor.sponsor_id, levelProfit);
 
       totalDownlineIncome += levelProfit;
@@ -594,7 +607,7 @@ export class UsersService {
 
     return {
       message: "Profit successfully distributed across levels",
-      totalDistributed: profitShare,
+      totalDistributed: totalProfit,
       totalDirectIncome,
       totalDownlineIncome,
       distributedProfits,
