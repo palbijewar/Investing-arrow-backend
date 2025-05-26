@@ -32,4 +32,12 @@ export class GasWalletController {
   async getTotalGasWallet(@Param('sponsorId') sponsorId: string) {
   return this.gasWalletService.getTotalGasWalletFund(sponsorId);
 }
+
+@Patch(':sponsorId')
+async updateGasWalletAmount(
+  @Param('sponsorId') sponsorId: string,
+  @Body() dto: any,
+) {
+  return this.gasWalletService.updateGasWalletAmount(sponsorId, dto.gas_wallet_amount);
+}
 }

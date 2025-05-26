@@ -80,4 +80,21 @@ export class GasWalletService {
       totalTransactions: records.length,}
     };
   }
+
+  async updateGasWalletAmount(sponsor_id: string, amount: number) {
+    const wallet = await this.gasWalletModel.findOne({ sponsor_id });
+  
+    if (!wallet) {
+      throw new NotFoundException('Gas wallet record not found for this sponsor');
+    }
+  
+    wallet.gas_wallet_amount = amount;
+    await wallet.save();
+  
+    return {
+      status: 'success',
+      message: 'Gas wallet amount updated successfully',
+      data: wallet,
+    };
+  }  
 }
