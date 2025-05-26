@@ -95,7 +95,8 @@ export class AuthController {
   @Get("users")
   async getSponsors(@Query('is_active') is_active: string) {
     const parsed = is_active === 'true' ? true : is_active === 'false' ? false : undefined;
-    return this.usersService.getAllSponsors(parsed);
+    const users = await this.usersService.getAllSponsors(parsed);
+    return { status: "success", data: users };
   }  
 
   @Patch("package/:sponsor_id")

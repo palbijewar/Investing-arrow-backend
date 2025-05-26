@@ -173,7 +173,7 @@ export class UsersService {
     const query = typeof is_active === 'boolean' ? { is_active } : {};
   
     const sponsors = await this.userModel.find(query).exec();
-  
+    
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
         const [paymentOption, gaswallet] = await Promise.all([
