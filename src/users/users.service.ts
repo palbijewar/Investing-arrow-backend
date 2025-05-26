@@ -166,15 +166,21 @@ export class UsersService {
     return user;
   }
 
-  async getAllSponsors(): Promise<any[]> {
-    const sponsors = await this.userModel.find().exec();
-
+  async getAllSponsors(is_active?: boolean): Promise<any[]> {
+    const query: any = {};
+    
+    if (typeof is_active === 'boolean') {
+      query.is_active = is_active;
+    }
+  
+    const sponsors = await this.userModel.find(query).exec();
+  
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
         const paymentOption = await this.paymentOptionModel.findOne({
           sponsor_id: sponsor.sponsor_id,
         });
-
+  
         return {
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
@@ -182,9 +188,9 @@ export class UsersService {
         };
       }),
     );
-
+  
     return enrichedSponsors;
-  }
+  }  
 
   async updateAmountDeposited(
     sponsor_id: string,
