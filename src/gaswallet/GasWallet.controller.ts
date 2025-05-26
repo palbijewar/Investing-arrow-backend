@@ -28,4 +28,9 @@ export class GasWalletController {
   getHistory(@Param("sponsor_id") sponsor_id: string) {
     return this.gasWalletService.getGasWalletHistory(sponsor_id);
   }
+
+  @Get('total-fund/:sponsorId')
+  async getTotalGasWallet(@Param('sponsorId') sponsorId: string) {
+  return this.gasWalletService.getTotalGasWalletFund(sponsorId);
+}
 }
