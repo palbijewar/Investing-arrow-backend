@@ -218,18 +218,16 @@ export class UsersService {
   }
 
   async updatePackage(sponsor_id: string, newPackage: any): Promise<any> {
-    const user = await this.userModel.findOne({ sponsor_id });
-    if (!user) {
-      throw new Error("User with sponsor_id ${sponsor_id} not found");
-    }
-
-    await this.userModel.updateOne(
+    const updatedUser = await this.userModel.findOneAndUpdate(
       { sponsor_id },
-      { $set: { package: newPackage.toString() } },
+      { $set: { package: newPackage.toString(), is_active: false } },
+      { new: true }
     );
-
-    const updatedUser = await this.userModel.findOne({ sponsor_id });
-
+  
+    if (!updatedUser) {
+      throw new Error(`User with sponsor_id ${sponsor_id} not found`);
+    }
+  
     return {
       status: "success",
       message: "Package updated successfully",
