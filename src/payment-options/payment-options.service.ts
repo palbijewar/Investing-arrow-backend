@@ -74,35 +74,41 @@ export class PaymentOptionService {
     const updated = await this.paymentOptionModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { demat_amount } },
-      {
-        new: true, // return the updated (or created) document
-        upsert: true, // create if it doesn't exist
-      },
+      { new: true, upsert: true }
     );
-
+  
+    await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { is_active: false } },
+      { new: true }
+    );
+  
     return {
       status: "success",
       message: "Demat amount updated or created",
       data: updated,
     };
-  }
+  }  
 
   async updateAmountDeposited(sponsor_id: string, amount: number) {
     const updated = await this.paymentOptionModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { amount } },
-      {
-        new: true, // return the updated (or created) document
-        upsert: true, // create if it doesn't exist
-      },
+      { new: true, upsert: true }
     );
-
+  
+    await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { is_active: false } },
+      { new: true }
+    );
+  
     return {
       status: "success",
       message: "Amount updated or created",
       data: updated,
     };
-  }
+  }  
 
   async getSponsorPaymentHistory(payment_sponsor_id: string) {
     const records = await this.paymentOptionModel
