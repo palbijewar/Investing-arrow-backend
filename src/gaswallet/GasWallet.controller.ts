@@ -28,16 +28,20 @@ export class GasWalletController {
     return this.gasWalletService.getGasWalletHistory(sponsor_id);
   }
 
-  @Get('total-fund/:sponsorId')
-  async getTotalGasWallet(@Param('sponsorId') sponsorId: string) {
-  return this.gasWalletService.getTotalGasWalletFund(sponsorId);
-}
+  @Get("total-fund/:sponsorId")
+  async getTotalGasWallet(@Param("sponsorId") sponsorId: string) {
+    return this.gasWalletService.getTotalGasWalletFund(sponsorId);
+  }
 
-@Patch(':sponsorId')
-async updateGasWalletAmount(
-  @Param('sponsorId') sponsorId: string,
-  @Body() dto: any,
-) {
-  return this.gasWalletService.updateGasWalletAmount(sponsorId, dto.gas_wallet_amount);
-}
+  @Patch(":sponsorId")
+  async updateGasWalletAmount(
+    @Param("sponsorId") sponsorId: string,
+    @Body() dto: any,
+  ) {
+    return this.gasWalletService.updateGasWalletAmount(
+      sponsorId,
+      dto.gas_wallet_amount,
+      dto.is_active,
+    );
+  }
 }

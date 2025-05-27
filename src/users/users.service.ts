@@ -195,45 +195,64 @@ export class UsersService {
 
   async updateAmountDeposited(
     sponsor_id: string,
-    newAmount: any,
+    newAmount: number | string,
+    is_active?: boolean,
   ): Promise<any> {
     const user = await this.userModel.findOne({ sponsor_id });
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-    const updatedAmount = Number(newAmount);
-
-    await this.userModel.updateOne(
-      { sponsor_id },
-      { $set: { amount_deposited: updatedAmount.toString() } },
-    );
-
-    const updatedUser = await this.userModel.findOne({ sponsor_id });
-
-    return {
-      status: "success",
-      message: "Amount deposited updated successfully",
-      data: updatedUser,
+  
+    const updatedFields: any = {
+      amount_deposited: Number(newAmount).toString(),
     };
-  }
-
-  async updatePackage(sponsor_id: string, newPackage: any): Promise<any> {
+  
+    if (typeof is_active === 'boolean') {
+      updatedFields.is_active = is_active;
+    }
+  
     const updatedUser = await this.userModel.findOneAndUpdate(
       { sponsor_id },
-      { $set: { package: newPackage.toString(), is_active: false } },
+      { $set: updatedFields },
       { new: true },
     );
+  
+    return {
+      status: 'success',
+      message: 'Amount deposited updated successfully',
+      data: updatedUser,
+    };
+  }  
 
+  async updatePackage(
+    sponsor_id: string,
+    newPackage: number | string,
+    is_active?: boolean,
+  ): Promise<any> {
+    const updatedFields: any = {
+      package: newPackage.toString(),
+    };
+  
+    if (typeof is_active === 'boolean') {
+      updatedFields.is_active = is_active;
+    }
+  
+    const updatedUser = await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: updatedFields },
+      { new: true },
+    );
+  
     if (!updatedUser) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-
+  
     return {
-      status: "success",
-      message: "Package updated successfully",
+      status: 'success',
+      message: 'Package updated successfully',
       data: updatedUser,
     };
-  }
+  }  
 
   async getReferralLevels(
     sponsor_id: string,

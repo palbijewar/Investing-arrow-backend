@@ -42,21 +42,26 @@ export class PaymentOptionController {
   @Patch(":sponsor_id/demat-amount")
   async updateDematAmount(
     @Param("sponsor_id") sponsor_id: string,
-    @Body("demat_amount") demat_amount: number,
+    @Body() body: any,
   ) {
     return this.paymentOptionService.updateDematAmount(
       sponsor_id,
-      demat_amount,
+      body.demat_amount,
+      body.is_active,
     );
   }
 
   @Patch(":sponsor_id/deposit-amount")
   async updateAmountDeposited(
     @Param("sponsor_id") sponsor_id: string,
-    @Body("amount") amount: number,
+    @Body() body: any,
   ) {
-    return this.paymentOptionService.updateAmountDeposited(sponsor_id, amount);
-  }
+    return this.paymentOptionService.updateAmountDeposited(
+      sponsor_id,
+      body.amount,
+      body.is_active,
+    );
+  }  
 
   @Get("history/:sponsor_id")
   getHistory(@Param("sponsor_id") sponsor_id: string) {

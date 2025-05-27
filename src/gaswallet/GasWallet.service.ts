@@ -63,38 +63,59 @@ export class GasWalletService {
 
   async getTotalGasWalletFund(payment_sponsor_id: string) {
     const records = await this.gasWalletModel.find({ payment_sponsor_id });
-  
+
     if (!records.length) {
-      throw new NotFoundException("No gas wallet records found for this sponsor");
+      throw new NotFoundException(
+        "No gas wallet records found for this sponsor",
+      );
     }
-  
+
     const totalFund = records.reduce(
       (sum, record) => sum + (record.gas_wallet_amount || 0),
       0,
     );
-  
+
     return {
       status: "success",
-      data:{ sponsor_id: payment_sponsor_id,
-      totalGasWalletFund: totalFund,
-      totalTransactions: records.length,}
+      data: {
+        sponsor_id: payment_sponsor_id,
+        totalGasWalletFund: totalFund,
+        totalTransactions: records.length,
+      },
     };
   }
 
-  async updateGasWalletAmount(sponsor_id: string, amount: number) {
+  async updateGasWalletAmount(
+    sponsor_id: string,
+    amount: number,
+    is_active?: boolean,
+  ) {
     const wallet = await this.gasWalletModel.findOne({ sponsor_id });
   
     if (!wallet) {
-      throw new NotFoundException('Gas wallet record not found for this sponsor');
+      throw new NotFoundException("Gas wallet record not found for this sponsor");
     }
   
     wallet.gas_wallet_amount = amount;
     await wallet.save();
   
+    if (typeof is_active === 'boolean') {
+      const user = await this.userModel.findOneAndUpdate(
+        { sponsor_id },
+        { $set: { is_active } },
+        { new: true }
+      );
+  
+      if (!user) {
+        throw new NotFoundException("User not found for sponsor_id: " + sponsor_id);
+      }
+    }
+  
     return {
-      status: 'success',
-      message: 'Gas wallet amount updated successfully',
+      status: "success",
+      message: "Gas wallet amount updated successfully",
       data: wallet,
     };
-  }  
+  }
+  
 }

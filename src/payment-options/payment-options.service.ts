@@ -70,42 +70,53 @@ export class PaymentOptionService {
     };
   }
 
-  async updateDematAmount(sponsor_id: string, demat_amount: number) {
+  async updateDematAmount(
+    sponsor_id: string,
+    demat_amount: number,
+    is_active?: boolean
+  ): Promise<any> {
     const updated = await this.paymentOptionModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { demat_amount } },
       { new: true, upsert: true }
     );
   
-    await this.userModel.findOneAndUpdate(
-      { sponsor_id },
-      { $set: { is_active: false } },
-      { new: true }
-    );
+    if (typeof is_active === 'boolean') {
+      await this.userModel.findOneAndUpdate(
+        { sponsor_id },
+        { $set: { is_active } },
+        { new: true }
+      );
+    }
   
     return {
-      status: "success",
-      message: "Demat amount updated or created",
+      status: 'success',
+      message: 'Demat amount updated or created',
       data: updated,
     };
-  }  
-
-  async updateAmountDeposited(sponsor_id: string, amount: number) {
+  }
+  async updateAmountDeposited(
+    sponsor_id: string,
+    amount: number,
+    is_active?: boolean
+  ): Promise<any> {
     const updated = await this.paymentOptionModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { amount } },
       { new: true, upsert: true }
     );
   
-    await this.userModel.findOneAndUpdate(
-      { sponsor_id },
-      { $set: { is_active: false } },
-      { new: true }
-    );
+    if (typeof is_active === 'boolean') {
+      await this.userModel.findOneAndUpdate(
+        { sponsor_id },
+        { $set: { is_active } },
+        { new: true }
+      );
+    }
   
     return {
-      status: "success",
-      message: "Amount updated or created",
+      status: 'success',
+      message: 'Amount updated or created',
       data: updated,
     };
   }  
