@@ -64,6 +64,15 @@ export class AuthController {
     return this.authService.getSponsorDetails(sponsor_id);
   }
 
+  @Get("users/sponsors/:sponsor_id")
+  async getAllSponsorsWithSponsorId(@Param("sponsor_id") sponsor_id: string) {
+    const sponsors = await this.usersService.getAllSponsorsWithSponsorId(sponsor_id);
+    return {
+      status: "success",
+      data: sponsors,
+    };
+  }
+
   @Put("users/:sponsor_id")
   async updateProfile(
     @Param("sponsor_id") sponsorId: string,

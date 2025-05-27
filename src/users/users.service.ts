@@ -170,17 +170,17 @@ export class UsersService {
   }
 
   async getAllSponsors(is_active?: boolean): Promise<any[]> {
-    const query = typeof is_active === 'boolean' ? { is_active } : {};
-  
+    const query = typeof is_active === "boolean" ? { is_active } : {};
+
     const sponsors = await this.userModel.find(query).exec();
-    
+
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
         const [paymentOption, gaswallet] = await Promise.all([
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
-  
+
         return {
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
@@ -189,9 +189,9 @@ export class UsersService {
         };
       }),
     );
-  
+
     return enrichedSponsors;
-  }  
+  }
 
   async updateAmountDeposited(
     sponsor_id: string,
@@ -221,13 +221,13 @@ export class UsersService {
     const updatedUser = await this.userModel.findOneAndUpdate(
       { sponsor_id },
       { $set: { package: newPackage.toString(), is_active: false } },
-      { new: true }
+      { new: true },
     );
-  
+
     if (!updatedUser) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-  
+
     return {
       status: "success",
       message: "Package updated successfully",
@@ -390,25 +390,25 @@ export class UsersService {
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-  
+
     const profitShare = (totalProfit * 15) / 100;
-  
+
     const selfProfit = (profitShare * 25) / 100;
     const newProfit = (user.profit || 0) + selfProfit;
-  
+
     await this.userModel.updateOne(
       { sponsor_id },
       { $set: { profit: newProfit } },
     );
-  
+
     const remainingProfit = profitShare - selfProfit;
     const distributionResult = await this.distributeLevelWiseProfit(
       sponsor_id,
       remainingProfit,
     );
-  
+
     const updatedUser = await this.userModel.findOne({ sponsor_id });
-  
+
     return {
       status: "success",
       message: "Profit updated and distributed successfully",
@@ -416,7 +416,7 @@ export class UsersService {
       distributedProfit: distributionResult,
       updatedUser,
     };
-  }  
+  }
 
   async getLevelWiseProfitDistribution(sponsor_id: string): Promise<any> {
     const mainUser = await this.userModel.findOne({ sponsor_id }).exec();
@@ -678,5 +678,29 @@ export class UsersService {
       totalDownlineIncome,
       totalIncome,
     };
+  }
+
+  async getAllSponsorsWithSponsorId(sponsor_id: string): Promise<any[]> {
+    const sponsors = await this.userModel
+      .find({ referred_by: sponsor_id })
+      .exec();
+
+    const enrichedSponsors = await Promise.all(
+      sponsors.map(async (sponsor) => {
+        const [paymentOption, gaswallet] = await Promise.all([
+          this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
+          this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
+        ]);
+
+        return {
+          ...sponsor.toObject(),
+          demat_amount: paymentOption?.demat_amount || null,
+          amount_deposited: paymentOption?.amount || null,
+          gas_wallet_fees: gaswallet?.gas_wallet_amount || null,
+        };
+      }),
+    );
+
+    return enrichedSponsors;
   }
 }
