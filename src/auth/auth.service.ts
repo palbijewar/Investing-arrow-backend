@@ -42,7 +42,7 @@ export class AuthService {
 
     const hash = await bcrypt.hash(password, 10);
 
-    await this.usersService.create({
+    const createdSponsor = await this.usersService.create({
       sponsor_id,
       username,
       email,
@@ -51,7 +51,11 @@ export class AuthService {
       referred_by,
     });
 
-    return { status: "success", message: "User registered successfully" };
+    return {
+      status: "success",
+      message: "User registered successfully",
+      data: createdSponsor,
+    };
   }
 
   async login(dto: LoginDto) {

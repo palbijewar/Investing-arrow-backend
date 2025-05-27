@@ -30,7 +30,6 @@ export class AuthController {
 
   @Post("signup")
   async signup(@Body() signupDto: SignupDto) {
-    console.log("Received DTO:", signupDto);
     return this.authService.signup(signupDto);
   }
 
