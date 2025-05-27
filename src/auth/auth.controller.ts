@@ -8,6 +8,7 @@ import {
   Put,
   Patch,
   Delete,
+  NotFoundException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignupDto } from "./dto/signup.dto";
@@ -168,5 +169,20 @@ export class AuthController {
     @Body("profit") profit: number,
   ) {
     return this.usersService.distributeLevelWiseProfit(sponsor_id, profit);
+  }
+
+  @Get('generate-referral-link/:sponsor_id')
+  async generateReferralLink(@Param('sponsor_id') sponsorId: string) {
+    const user = await this.usersService.findBySponsorID(sponsorId);
+    if (!user) {
+      throw new NotFoundException(`Sponsor with ID ${sponsorId} not found`);
+    }
+
+    const referralLink = `https://your-frontend-domain.com/signup?ref=${sponsorId}`;
+
+    return {
+      message: 'Referral link generated successfully',
+      referralLink,
+    };
   }
 }
