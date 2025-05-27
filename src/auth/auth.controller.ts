@@ -94,11 +94,12 @@ export class AuthController {
   }
 
   @Get("users")
-  async getSponsors(@Query('is_active') is_active: string) {
-    const parsed = is_active === 'true' ? true : is_active === 'false' ? false : undefined;
+  async getSponsors(@Query("is_active") is_active: string) {
+    const parsed =
+      is_active === "true" ? true : is_active === "false" ? false : undefined;
     const users = await this.usersService.getAllSponsors(parsed);
     return { status: "success", data: users };
-  }  
+  }
 
   @Patch("package/:sponsor_id")
   async updatePackage(
@@ -171,8 +172,8 @@ export class AuthController {
     return this.usersService.distributeLevelWiseProfit(sponsor_id, profit);
   }
 
-  @Get('generate-referral-link/:sponsor_id')
-  async generateReferralLink(@Param('sponsor_id') sponsorId: string) {
+  @Get("generate-referral-link/:sponsor_id")
+  async generateReferralLink(@Param("sponsor_id") sponsorId: string) {
     const user = await this.usersService.findBySponsorID(sponsorId);
     if (!user) {
       throw new NotFoundException(`Sponsor with ID ${sponsorId} not found`);
@@ -181,8 +182,8 @@ export class AuthController {
     const referralLink = `https://your-frontend-domain.com/signup?ref=${sponsorId}`;
 
     return {
-      message: 'Referral link generated successfully',
-      referralLink,
+      message: "Referral link generated successfully",
+      data: { referralLink },
     };
   }
 }
