@@ -90,21 +90,26 @@ export class GasWalletService {
     amount: number,
     is_active?: boolean,
   ) {
-    sponsor_id = sponsor_id.trim(); // trim whitespace
+    sponsor_id = sponsor_id.trim();
     console.log({ sponsor_id });
   
-    const wallet = await this.gasWalletModel.findOne({
-      sponsor_id: new RegExp(`^${sponsor_id}$`, 'i')  // case-insensitive match
-    });
-  
-    console.log({ wallet });
+    let wallet = await this.gasWalletModel.findOne({ sponsor_id });
   
     if (!wallet) {
-      throw new NotFoundException("Gas wallet record not found for this sponsor");
-    }
+      // ✅ Create new wallet if not found
+      wallet = new this.gasWalletModel({
+        sponsor_id,
+        gas_wallet_amount: amount,
+      });
   
-    wallet.gas_wallet_amount = amount;
-    await wallet.save();
+      await wallet.save();
+      console.log('Created new gas wallet:', wallet);
+    } else {
+      // ✅ Update existing wallet
+      wallet.gas_wallet_amount = amount;
+      await wallet.save();
+      console.log('Updated existing gas wallet:', wallet);
+    }
   
     if (typeof is_active === 'boolean') {
       const user = await this.userModel.findOneAndUpdate(
@@ -120,10 +125,9 @@ export class GasWalletService {
   
     return {
       status: "success",
-      message: "Gas wallet amount updated successfully",
+      message: "Gas wallet updated successfully",
       data: wallet,
     };
   }
-  
   
 }
