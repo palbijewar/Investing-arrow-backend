@@ -38,6 +38,8 @@ export class GasWalletController {
     @Param("sponsorId") sponsorId: string,
     @Body() dto: any,
   ) {
+    console.log({dto});
+    
     return this.gasWalletService.updateGasWalletAmount(
       sponsorId,
       dto.gas_wallet_amount,

@@ -98,7 +98,7 @@ export class GasWalletService {
   
     wallet.gas_wallet_amount = amount;
     await wallet.save();
-  
+    console.log({wallet});
     if (typeof is_active === 'boolean') {
       const user = await this.userModel.findOneAndUpdate(
         { sponsor_id },
