@@ -701,26 +701,33 @@ export class UsersService {
   }
 
   async getAllSponsorsWithSponsorId(sponsor_id: string): Promise<any[]> {
-    const sponsors = await this.userModel
-      .find({ referred_by: sponsor_id })
-      .exec();
-
-    const enrichedSponsors = await Promise.all(
-      sponsors.map(async (sponsor) => {
+    const allSponsors: any[] = [];
+  
+    const fetchDownline = async (currentSponsorId: string) => {
+      const directSponsors = await this.userModel
+        .find({ referred_by: currentSponsorId })
+        .exec();
+  
+      for (const sponsor of directSponsors) {
         const [paymentOption, gaswallet] = await Promise.all([
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
-
-        return {
+  
+        allSponsors.push({
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
           amount_deposited: paymentOption?.amount || null,
           gas_wallet_fees: gaswallet?.gas_wallet_amount || null,
-        };
-      }),
-    );
-
-    return enrichedSponsors;
-  }
+        });
+  
+        // Recursively fetch their referrals (downline)
+        await fetchDownline(sponsor.sponsor_id);
+      }
+    };
+  
+    await fetchDownline(sponsor_id);
+  
+    return allSponsors;
+  }  
 }
