@@ -101,20 +101,24 @@ export class GasWalletService {
     let wallet = await this.gasWalletModel.findOne({ sponsor_id });
 
     if (!wallet) {
+      // Wallet doesn't exist, create new one
       wallet = new this.gasWalletModel({
         sponsor_id,
         gas_wallet_amount: amount,
-        activated_gas_wallet_amount: amount,
+        activated_gas_wallet_amount: is_active ? amount : 0,
         payment_sponsor_id,
       });
-
       await wallet.save();
     } else {
-      wallet.gas_wallet_amount = amount;
-      wallet.activated_gas_wallet_amount = amount;
-      await wallet.save();
+      if (is_active === true) {
+        wallet.activated_gas_wallet_amount += amount;
+        await wallet.save();
+      } else {
+        wallet.gas_wallet_amount += amount;
+        await wallet.save();
+      }
     }
-
+    // Update user is_active status if provided
     if (typeof is_active === "boolean") {
       const user = await this.userModel.findOneAndUpdate(
         { sponsor_id },
