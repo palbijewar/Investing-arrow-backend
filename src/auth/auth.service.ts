@@ -120,6 +120,7 @@ export class AuthService {
         package: user.package || "",
         amount_deposited: user.amount_deposited || "",
         createdAt: user.createdAt,
+        is_active: user.is_active,
       })),
     };
   }
@@ -139,6 +140,7 @@ export class AuthService {
         package: user.package || "",
         amount_deposited: user.amount_deposited || "",
         level: user.level || "",
+        is_active: user.is_active,
       })),
     };
   }

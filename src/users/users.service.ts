@@ -116,6 +116,7 @@ export class UsersService {
             package: user?.package || null,
             level: level,
             createdAt: user.createdAt,
+            is_active: user.is_active,
           });
         }
 
