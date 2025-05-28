@@ -90,7 +90,9 @@ export class GasWalletService {
     amount: number,
     is_active?: boolean,
   ) {
+
     const wallet = await this.gasWalletModel.findOne({ sponsor_id });
+  console.log({wallet});
   
     if (!wallet) {
       throw new NotFoundException("Gas wallet record not found for this sponsor");
