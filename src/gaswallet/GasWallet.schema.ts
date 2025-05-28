@@ -6,6 +6,7 @@ export class GasWallet extends Document {
   @Prop({ required: true })
   gas_wallet_amount: number;
 
+  @Prop({ type: Number, default: 0 })
   activated_gas_wallet_amount: number;
 
   @Prop({ required: true })
