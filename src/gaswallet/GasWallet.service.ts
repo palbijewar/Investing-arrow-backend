@@ -90,7 +90,7 @@ export class GasWalletService {
     amount: number,
     is_active?: boolean,
   ) {
-
+    console.log({sponsor_id});
     const wallet = await this.gasWalletModel.findOne({ sponsor_id });
   console.log({wallet});
   
