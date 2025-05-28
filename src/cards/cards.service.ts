@@ -43,15 +43,14 @@ export class CardsService {
       const users = await this.userModel
         .find({
           referred_by: { $in: nextSponsorIds },
-          is_active: true,
         })
         .lean();
 
       downline = downline.concat(users);
       nextSponsorIds = users.map((user) => user.sponsor_id);
     }
-
-    return downline;
+    const activeUsers = downline.filter((user) => user.is_active === true);
+    return activeUsers;
   }
 
   // 1. Direct Portfolio Investment
