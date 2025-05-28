@@ -71,7 +71,7 @@ export class GasWalletService {
     }
 
     const totalFund = records.reduce(
-      (sum, record) => sum + (record.gas_wallet_amount || 0),
+      (sum, record) => sum + (record.activated_gas_wallet_amount || 0),
       0,
     );
 
@@ -96,23 +96,20 @@ export class GasWalletService {
     let wallet = await this.gasWalletModel.findOne({ sponsor_id });
   
     if (!wallet) {
-      // ✅ Create a new gas wallet record
       wallet = new this.gasWalletModel({
         sponsor_id,
         gas_wallet_amount: amount,
+        activated_gas_wallet_amount: amount,
         payment_sponsor_id,
       });
   
       await wallet.save();
-      console.log('Gas wallet created:', wallet);
     } else {
-      // ✅ Update existing wallet
       wallet.gas_wallet_amount = amount;
+      wallet.activated_gas_wallet_amount = amount;
       await wallet.save();
-      console.log('Gas wallet updated:', wallet);
     }
   
-    // ✅ Optional is_active status update for User
     if (typeof is_active === 'boolean') {
       const user = await this.userModel.findOneAndUpdate(
         { sponsor_id },

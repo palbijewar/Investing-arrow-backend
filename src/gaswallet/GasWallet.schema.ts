@@ -6,6 +6,8 @@ export class GasWallet extends Document {
   @Prop({ required: true })
   gas_wallet_amount: number;
 
+  activated_gas_wallet_amount: number;
+
   @Prop({ required: true })
   sponsor_id: string;
 
