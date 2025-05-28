@@ -88,29 +88,31 @@ export class GasWalletService {
   async updateGasWalletAmount(
     sponsor_id: string,
     amount: number,
+    payment_sponsor_id: string,
     is_active?: boolean,
   ) {
     sponsor_id = sponsor_id.trim();
-    console.log({ sponsor_id });
   
     let wallet = await this.gasWalletModel.findOne({ sponsor_id });
   
     if (!wallet) {
-      // ✅ Create new wallet if not found
+      // ✅ Create a new gas wallet record
       wallet = new this.gasWalletModel({
         sponsor_id,
         gas_wallet_amount: amount,
+        payment_sponsor_id,
       });
   
       await wallet.save();
-      console.log('Created new gas wallet:', wallet);
+      console.log('Gas wallet created:', wallet);
     } else {
       // ✅ Update existing wallet
       wallet.gas_wallet_amount = amount;
       await wallet.save();
-      console.log('Updated existing gas wallet:', wallet);
+      console.log('Gas wallet updated:', wallet);
     }
   
+    // ✅ Optional is_active status update for User
     if (typeof is_active === 'boolean') {
       const user = await this.userModel.findOneAndUpdate(
         { sponsor_id },
@@ -128,6 +130,5 @@ export class GasWalletService {
       message: "Gas wallet updated successfully",
       data: wallet,
     };
-  }
-  
+  }  
 }

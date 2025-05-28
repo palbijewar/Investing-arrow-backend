@@ -44,6 +44,7 @@ export class GasWalletController {
       sponsorId,
       dto.gas_wallet_amount,
       dto.is_active,
+      dto.payment_sponsor_id,
     );
   }
 }
