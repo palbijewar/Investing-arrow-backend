@@ -17,6 +17,11 @@ export class GasWalletService {
   ) {}
 
   async createGasWallet(dto: GasWalletDto, paymentSponsorId: string) {
+    await this.userModel.findOneAndUpdate(
+      { sponsor_id: dto.sponsor_id },
+      { is_active: false },
+    );
+
     const saved = await this.gasWalletModel.create({
       gas_wallet_amount: dto.gas_wallet_amount,
       sponsor_id: dto.sponsor_id,
@@ -92,9 +97,9 @@ export class GasWalletService {
     is_active?: boolean,
   ) {
     sponsor_id = sponsor_id.trim();
-  
+
     let wallet = await this.gasWalletModel.findOne({ sponsor_id });
-  
+
     if (!wallet) {
       wallet = new this.gasWalletModel({
         sponsor_id,
@@ -102,30 +107,32 @@ export class GasWalletService {
         activated_gas_wallet_amount: amount,
         payment_sponsor_id,
       });
-  
+
       await wallet.save();
     } else {
       wallet.gas_wallet_amount = amount;
       wallet.activated_gas_wallet_amount = amount;
       await wallet.save();
     }
-  
-    if (typeof is_active === 'boolean') {
+
+    if (typeof is_active === "boolean") {
       const user = await this.userModel.findOneAndUpdate(
         { sponsor_id },
         { $set: { is_active } },
-        { new: true }
+        { new: true },
       );
-  
+
       if (!user) {
-        throw new NotFoundException("User not found for sponsor_id: " + sponsor_id);
+        throw new NotFoundException(
+          "User not found for sponsor_id: " + sponsor_id,
+        );
       }
     }
-  
+
     return {
       status: "success",
       message: "Gas wallet updated successfully",
       data: wallet,
     };
-  }  
+  }
 }
