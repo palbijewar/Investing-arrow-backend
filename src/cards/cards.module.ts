@@ -3,19 +3,26 @@ import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { UsersModule } from "../users/users.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtStrategy } from "./jwt.strategy"; 
+import { JwtStrategy } from "./jwt.strategy";
 import { CardsController } from "./cards.controller";
 import { CardsService } from "./cards.service";
 import { PaymentOptionsModule } from "src/payment-options/payment-options.module";
 import { User, UserSchema } from "src/users/user.schema";
 import { MongooseModule } from "@nestjs/mongoose";
+import {
+  PaymentOption,
+  PaymentOptionSchema,
+} from "src/payment-options/payment-options.schema";
 
 @Module({
   imports: [
     UsersModule,
     PaymentOptionsModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: PaymentOption.name, schema: PaymentOptionSchema },
+    ]),
+    PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
