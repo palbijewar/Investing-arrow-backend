@@ -554,7 +554,7 @@ export class CardsService {
       totalDownlineIncome += levelProfit;
     }
 
-    const totalIncome = totalDirectIncome + totalDownlineIncome;
+    const totalIncome = +(totalDirectIncome + totalDownlineIncome).toFixed(2);
 
     return {
       message: "Profit summary calculated successfully",
