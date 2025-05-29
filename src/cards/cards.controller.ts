@@ -144,13 +144,4 @@ export class CardsController {
       data: total,
     };
   }
-
-  @Get("bot-income/:sponsor_id")
-  async getLevelWiseProfit(@Param("sponsor_id") sponsor_id: string) {
-    const total = await this.cardsService.getLevelWiseProfit(sponsor_id);
-    return {
-      status: "success",
-      data: total,
-    };
-  }
 }
