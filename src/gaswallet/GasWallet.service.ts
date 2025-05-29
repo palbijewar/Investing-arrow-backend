@@ -69,12 +69,6 @@ export class GasWalletService {
   async getTotalGasWalletFund(payment_sponsor_id: string) {
     const records = await this.gasWalletModel.find({ payment_sponsor_id });
 
-    if (!records.length) {
-      throw new NotFoundException(
-        "No gas wallet records found for this sponsor",
-      );
-    }
-
     const totalFund = records.reduce(
       (sum, record) => sum + (record.activated_gas_wallet_amount || 0),
       0,
