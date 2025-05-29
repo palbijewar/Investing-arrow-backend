@@ -27,6 +27,7 @@ export class PaymentOptionService {
     dto: PaymentOptionDto,
     paymentSponsorId: string,
   ) {
+    let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id: dto.sponsor_id });
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
 
     const uploadResult = await this.s3Service.uploadFile(
@@ -45,7 +46,10 @@ export class PaymentOptionService {
       file_key: uploadResult.Key,
       payment_sponsor_id: paymentSponsorId,
     });
-
+    await this.userModel.findOneAndUpdate(
+      { sponsor_id: dto.sponsor_id },
+      { is_active: false },
+    );
     return {
       status: "success",
       message: "New payment record created",
@@ -70,56 +74,31 @@ export class PaymentOptionService {
     };
   }
 
-  async updateDematAmount(
-    sponsor_id: string,
-    demat_amount: number,
-    is_active?: boolean
-  ): Promise<any> {
-    const updated = await this.paymentOptionModel.findOneAndUpdate(
-      { sponsor_id },
-      { $set: { demat_amount } },
-      { new: true, upsert: true }
-    );
+  // async updateDematAmount(
+  //   sponsor_id: string,
+  //   demat_amount: number,
+  //   is_active?: boolean
+  // ): Promise<any> {
+  //   const updated = await this.paymentOptionModel.findOneAndUpdate(
+  //     { sponsor_id },
+  //     { $set: { demat_amount } },
+  //     { new: true, upsert: true }
+  //   );
   
-    if (typeof is_active === 'boolean') {
-      await this.userModel.findOneAndUpdate(
-        { sponsor_id },
-        { $set: { is_active } },
-        { new: true }
-      );
-    }
+  //   if (typeof is_active === 'boolean') {
+  //     await this.userModel.findOneAndUpdate(
+  //       { sponsor_id },
+  //       { $set: { is_active } },
+  //       { new: true }
+  //     );
+  //   }
   
-    return {
-      status: 'success',
-      message: 'Demat amount updated or created',
-      data: updated,
-    };
-  }
-  async updateAmountDeposited(
-    sponsor_id: string,
-    amount: number,
-    is_active?: boolean
-  ): Promise<any> {
-    const updated = await this.paymentOptionModel.findOneAndUpdate(
-      { sponsor_id },
-      { $set: { amount } },
-      { new: true, upsert: true }
-    );
-  
-    if (typeof is_active === 'boolean') {
-      await this.userModel.findOneAndUpdate(
-        { sponsor_id },
-        { $set: { is_active } },
-        { new: true }
-      );
-    }
-  
-    return {
-      status: 'success',
-      message: 'Amount updated or created',
-      data: updated,
-    };
-  }  
+  //   return {
+  //     status: 'success',
+  //     message: 'Demat amount updated or created',
+  //     data: updated,
+  //   };
+  // } 
 
   async getSponsorPaymentHistory(payment_sponsor_id: string) {
     const records = await this.paymentOptionModel
@@ -154,4 +133,74 @@ export class PaymentOptionService {
       data,
     };
   }
+
+  async updateAmountDeposited(
+    sponsor_id: string,
+    amount: number,
+    payment_sponsor_id: string,
+    is_active?: boolean,
+  ) {
+    sponsor_id = sponsor_id.trim();
+
+    let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
+
+    if (!paymentOption) {
+      paymentOption = new this.paymentOptionModel({
+        sponsor_id,
+        amount: amount,
+        activated_amount: is_active ? amount : 0,
+        payment_sponsor_id,
+      });
+      await paymentOption.save();
+    } else {
+      if (is_active === true) {
+        paymentOption.activated_amount += amount;
+        await paymentOption.save();
+      } else {
+        paymentOption.activated_amount += amount;
+        await paymentOption.save();
+      }
+    }
+
+    return {
+      status: "success",
+      message: "Payment option updated successfully",
+      data: paymentOption,
+    };
+  }
+
+   async updateDematAmount(
+      sponsor_id: string,
+      amount: number,
+      payment_sponsor_id: string,
+      is_active?: boolean,
+    ) {
+      sponsor_id = sponsor_id.trim();
+  
+      let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
+  
+      if (!paymentOption) {
+        paymentOption = new this.paymentOptionModel({
+          sponsor_id,
+          demat_amount: amount,
+          activated_demat_amount: is_active ? amount : 0,
+          payment_sponsor_id,
+        });
+        await paymentOption.save();
+      } else {
+        if (is_active === true) {
+          paymentOption.activated_demat_amount += amount;
+          await paymentOption.save();
+        } else {
+          paymentOption.activated_demat_amount += amount;
+          await paymentOption.save();
+        }
+      }
+  
+      return {
+        status: "success",
+        message: "Payment option updated successfully",
+        data: paymentOption,
+      };
+    }
 }

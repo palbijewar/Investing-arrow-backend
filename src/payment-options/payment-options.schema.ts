@@ -6,8 +6,14 @@ export class PaymentOption extends Document {
   @Prop({ required: true })
   amount: number;
 
+  @Prop({ type: Number, default: 0 })
+  activated_amount: number;
+
   @Prop({ required: true })
   demat_amount: number;
+
+  @Prop({ type: Number, default: 0 })
+  activated_demat_amount: number;
 
   @Prop({ required: true })
   sponsor_id: string;

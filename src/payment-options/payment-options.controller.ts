@@ -47,6 +47,7 @@ export class PaymentOptionController {
     return this.paymentOptionService.updateDematAmount(
       sponsor_id,
       body.demat_amount,
+      body.payment_sponsor_id,
       body.is_active,
     );
   }
@@ -59,6 +60,7 @@ export class PaymentOptionController {
     return this.paymentOptionService.updateAmountDeposited(
       sponsor_id,
       body.amount,
+      body.payment_sponsor_id,
       body.is_active,
     );
   }  
