@@ -136,9 +136,9 @@ export class CardsController {
   }
 
   @Get("bot-income/:sponsor_id")
-  async distribotLevelWisebotIncome(@Param("sponsor_id") sponsor_id: string) {
+  async getLevelWiseProfit(@Param("sponsor_id") sponsor_id: string) {
     const total =
-      await this.cardsService.distribotLevelWisebotIncome(sponsor_id);
+      await this.cardsService.getLevelWiseProfit(sponsor_id);
     return {
       status: "success",
       data: total,

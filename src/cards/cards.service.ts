@@ -452,6 +452,8 @@ export class CardsService {
       const sponsor = await this.userModel.findOne({
         sponsor_id: user.sponsor_id,
       });
+      console.log({ sponsor });
+
       if (!sponsor) continue;
 
       const levelProfit =
@@ -487,13 +489,16 @@ export class CardsService {
       { $inc: { bot_income: amount } },
     );
   }
-    async getLevelWiseProfit(userSponsorId: string): Promise<{
+
+  async getLevelWiseProfit(userSponsorId: string): Promise<{
     message: string;
     totalDirectIncome: number;
     totalDownlineIncome: number;
     totalIncome: number;
   }> {
-     const directUsers = await this.userModel.find({
+    const LEVEL_PERCENTAGES = [15, 8, 5, 5, 4, 4, 3, 3, 2, 1]; //level 1 to 10 respectively
+
+    const directUsers = await this.userModel.find({
       referred_by: userSponsorId,
     });
 
@@ -501,12 +506,11 @@ export class CardsService {
 
     let totalDirectIncome = 0;
     let totalDownlineIncome = 0;
-    let totalIncome = 0;
 
     const directSponsorMap = new Map<string, boolean>();
     const downlineSponsorMap = new Map<string, boolean>();
 
-    // ✅ Level 1 - Direct users
+    // ✅ Level 1 - Direct sponsors
     for (const user of directUsers) {
       const sponsorId = user.sponsor_id;
       if (directSponsorMap.has(sponsorId)) continue;
@@ -516,15 +520,22 @@ export class CardsService {
       const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
       if (!sponsor) continue;
 
-      const levelProfit = sponsor.bot_income || 0;
+      const payment = await this.paymentOptionModel.findOne({
+        sponsor_id: sponsor.sponsor_id,
+      });
+      if (!payment || !payment.amount) continue;
+
+      const fiftyPercenteDeduction = (payment.amount * 0.5) / 100;
+      const levelProfit = (fiftyPercenteDeduction * LEVEL_PERCENTAGES[0]) / 100;
       totalDirectIncome += levelProfit;
     }
 
-    // ✅ Levels 2–10 - Downline users
+    // ✅ Levels 2–10 - Downline sponsors
     for (const user of downlineUsers) {
       const level = user.level;
-      const sponsorId = user.sponsor_id;
       if (level < 2 || level > 10) continue;
+
+      const sponsorId = user.sponsor_id;
       if (downlineSponsorMap.has(sponsorId)) continue;
 
       downlineSponsorMap.set(sponsorId, true);
@@ -532,10 +543,19 @@ export class CardsService {
       const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
       if (!sponsor) continue;
 
-      const levelProfit = sponsor.bot_income || 0;
+      const payment = await this.paymentOptionModel.findOne({
+        sponsor_id: sponsor.sponsor_id,
+      });
+
+      if (!payment || !payment.amount) continue;
+      const fiftyPercenteDeduction = (payment.amount * 0.5) / 100;
+      const levelProfit =
+        (fiftyPercenteDeduction * LEVEL_PERCENTAGES[level - 1]) / 100;
       totalDownlineIncome += levelProfit;
     }
-    totalIncome = totalDirectIncome + totalDownlineIncome;
+
+    const totalIncome = totalDirectIncome + totalDownlineIncome;
+
     return {
       message: "Profit summary calculated successfully",
       totalDirectIncome,
