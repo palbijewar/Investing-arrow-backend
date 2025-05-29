@@ -95,7 +95,7 @@ export class CardsService {
       .select("amount");
 
     const total = directUsersPaymentOptions.reduce(
-      (sum, payment) => sum + Number(payment.amount || 0),
+      (sum, payment) => sum + Number(payment.activated_amount || 0),
       0,
     );
 
@@ -111,12 +111,12 @@ export class CardsService {
 
     const paymentOptions = await this.paymentOptionModel
       .find({ sponsor_id: { $in: sponsorIds } })
-      .select("amount")
+      .select("activated_amount")
       .lean()
       .exec();
 
     const total = paymentOptions.reduce(
-      (sum, p) => sum + Number(p.amount || 0),
+      (sum, p) => sum + Number(p.activated_amount || 0),
       0,
     );
     return total;
@@ -136,7 +136,7 @@ export class CardsService {
       {
         $group: {
           _id: null,
-          total: { $sum: { $toDouble: "$demat_amount" } },
+          total: { $sum: { $toDouble: "$activated_demat_amount" } },
         },
       },
     ]);
@@ -151,7 +151,7 @@ export class CardsService {
     const result = await this.paymentOptionModel.aggregate([
       { $match: { sponsor_id: { $in: userIds } } },
       {
-        $group: { _id: null, total: { $sum: { $toDouble: "$demat_amount" } } },
+        $group: { _id: null, total: { $sum: { $toDouble: "$activated_demat_amount" } } },
       },
     ]);
 
@@ -182,7 +182,7 @@ export class CardsService {
       {
         $group: {
           _id: null,
-          totalDematAmount: { $sum: { $toDouble: "$demat_amount" } },
+          totalDematAmount: { $sum: { $toDouble: "$activated_demat_amount" } },
         },
       },
     ]);
@@ -523,9 +523,9 @@ export class CardsService {
       const payment = await this.paymentOptionModel.findOne({
         sponsor_id: sponsor.sponsor_id,
       });
-      if (!payment || !payment.amount) continue;
+      if (!payment || !payment.activated_amount) continue;
 
-      const fiftyPercenteDeduction = (payment.amount * 0.5) / 100;
+      const fiftyPercenteDeduction = (payment.activated_amount * 0.5) / 100;
       const levelProfit = (fiftyPercenteDeduction * LEVEL_PERCENTAGES[0]) / 100;
       totalDirectIncome += levelProfit;
     }
@@ -547,8 +547,8 @@ export class CardsService {
         sponsor_id: sponsor.sponsor_id,
       });
 
-      if (!payment || !payment.amount) continue;
-      const fiftyPercenteDeduction = (payment.amount * 0.5) / 100;
+      if (!payment || !payment.activated_amount) continue;
+      const fiftyPercenteDeduction = (payment.activated_amount * 0.5) / 100;
       const levelProfit =
         (fiftyPercenteDeduction * LEVEL_PERCENTAGES[level - 1]) / 100;
       totalDownlineIncome += levelProfit;
