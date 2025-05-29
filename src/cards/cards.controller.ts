@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Put, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { CardsService } from "./cards.service";
 
@@ -45,8 +45,11 @@ export class CardsController {
   }
 
   @Get("second-level-income/:sponsorId")
-  async getSecondLevelReferralsTotalIncome(@Param("sponsorId") sponsorId: string) {
-    const total = await this.cardsService.getSecondLevelReferralsTotalIncome(sponsorId);
+  async getSecondLevelReferralsTotalIncome(
+    @Param("sponsorId") sponsorId: string,
+  ) {
+    const total =
+      await this.cardsService.getSecondLevelReferralsTotalIncome(sponsorId);
     return { status: "success", data: total };
   }
 
@@ -59,48 +62,55 @@ export class CardsController {
   @Get("team/downline-bot/:sponsorId")
   async getActiveDownlineUsers(@Param("sponsorId") sponsorId: string) {
     const total = await this.cardsService.getActiveDownlineUsers(sponsorId);
-    
+
     return { status: "success", data: { downline_bot_count: total.length } };
   }
 
-  @Get('bot-direct/:sponsor_id')
-  async botDirectPortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {
-    const total = await this.cardsService.botDirectPortfolioInvestment(sponsor_id);
+  @Get("bot-direct/:sponsor_id")
+  async botDirectPortfolioInvestment(@Param("sponsor_id") sponsor_id: string) {
+    const total =
+      await this.cardsService.botDirectPortfolioInvestment(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       data: {
         direct_bot_income: total,
       },
     };
   }
 
-  @Get('bot-downline/:sponsor_id')
-  async botDownlinePortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {    
-    const total = await this.cardsService.botDownlinePortfolioInvestment(sponsor_id);
+  @Get("bot-downline/:sponsor_id")
+  async botDownlinePortfolioInvestment(
+    @Param("sponsor_id") sponsor_id: string,
+  ) {
+    const total =
+      await this.cardsService.botDownlinePortfolioInvestment(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       data: {
         downline_bot_income: total,
       },
     };
   }
 
-  @Get('direct-portfolio-investment/:sponsor_id')
-  async directPortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {
+  @Get("direct-portfolio-investment/:sponsor_id")
+  async directPortfolioInvestment(@Param("sponsor_id") sponsor_id: string) {
     const total = await this.cardsService.directPortfolioInvestment(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       data: {
         direct_portfolio_investment: total,
       },
     };
   }
 
-  @Get('downline-portfolio-investment/:sponsor_id')
-  async getDownlinePortfolioInvestment(@Param('sponsor_id') sponsor_id: string) {    
-    const total = await this.cardsService.getDownlinePortfolioInvestment(sponsor_id);
+  @Get("downline-portfolio-investment/:sponsor_id")
+  async getDownlinePortfolioInvestment(
+    @Param("sponsor_id") sponsor_id: string,
+  ) {
+    const total =
+      await this.cardsService.getDownlinePortfolioInvestment(sponsor_id);
     return {
-      status: 'success',
+      status: "success",
       data: {
         downline_portfolio_investment: total,
       },
@@ -123,5 +133,24 @@ export class CardsController {
   async getRankIncome(@Param("sponsorId") sponsorId: string) {
     const total = await this.cardsService.getRankIncome(sponsorId);
     return { status: "success", data: total };
+  }
+
+  @Put("bot-income/:sponsor_id")
+  async distribotLevelWisebotIncome(@Param("sponsor_id") sponsor_id: string) {
+    const total =
+      await this.cardsService.distribotLevelWisebotIncome(sponsor_id);
+    return {
+      status: "success",
+      data: total,
+    };
+  }
+
+  @Get("bot-income/:sponsor_id")
+  async getLevelWiseProfit(@Param("sponsor_id") sponsor_id: string) {
+    const total = await this.cardsService.getLevelWiseProfit(sponsor_id);
+    return {
+      status: "success",
+      data: total,
+    };
   }
 }

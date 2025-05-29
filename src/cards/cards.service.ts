@@ -53,6 +53,32 @@ export class CardsService {
     return activeUsers;
   }
 
+  async getDownlineUsers(sponsor_id: string): Promise<any> {
+    let downline: User[] = [];
+
+    const directReferrals = await this.userModel
+      .find({
+        referred_by: sponsor_id,
+      })
+      .lean();
+
+    const directSponsorIds = directReferrals.map((user) => user.sponsor_id);
+
+    let nextSponsorIds = [...directSponsorIds];
+
+    while (nextSponsorIds.length > 0) {
+      const users = await this.userModel
+        .find({
+          referred_by: { $in: nextSponsorIds },
+        })
+        .lean();
+
+      downline = downline.concat(users);
+      nextSponsorIds = users.map((user) => user.sponsor_id);
+    }
+    return downline;
+  }
+
   // 1. Direct Portfolio Investment
   async botDirectPortfolioInvestment(sponsor_id: string): Promise<number> {
     const users = await this.userModel.find({
@@ -355,5 +381,166 @@ export class CardsService {
     }
 
     return null;
+  }
+
+  async distribotLevelWisebotIncome(userSponsorId: string) {
+    const directUsers = await this.userModel.find({
+      referred_by: userSponsorId,
+    });
+
+    const downlineUsers = await this.getDownlineUsers(userSponsorId);
+    const directUsersIncome =
+      await this.botDirectPortfolioInvestment(userSponsorId);
+    const downlineUsersIncome =
+      await this.botDownlinePortfolioInvestment(userSponsorId);
+
+    const totalEligibleBotIncome =
+      (directUsersIncome + downlineUsersIncome) * 0.5;
+
+    const LEVEL_PERCENTAGES = [15, 8, 5, 5, 4, 4, 3, 3, 2, 1];
+
+    const selfIncome = (totalEligibleBotIncome * 15) / 100;
+    await this.userModel.updateOne(
+      { sponsor_id: userSponsorId },
+      { $inc: { bot_income: selfIncome } },
+    );
+
+    const distributedBotIncome: {
+      level: number;
+      sponsor_id: string;
+      username: string;
+      email: string;
+      phone: string;
+      bot_income: number;
+    }[] = [];
+
+    let totalDirectIncome = 0;
+    let totalDownlineIncome = 0;
+
+    const directSponsorMap = new Map<string, boolean>();
+
+    // Level 1 – direct sponsors of referred users
+    for (const user of directUsers) {
+      const level = 1;
+      const sponsorId = user.sponsor_id;
+      if (directSponsorMap.has(sponsorId)) continue;
+      directSponsorMap.set(sponsorId, true);
+
+      const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
+      if (!sponsor) continue;
+
+      const levelProfit =
+        (totalEligibleBotIncome * LEVEL_PERCENTAGES[level - 1]) / 100;
+      await this.addbotIncomeToSponsor(sponsor.sponsor_id, levelProfit);
+      totalDirectIncome += levelProfit;
+
+      distributedBotIncome.push({
+        level,
+        sponsor_id: sponsor.sponsor_id,
+        username: sponsor.username,
+        email: sponsor.email,
+        phone: sponsor.phone,
+        bot_income: levelProfit,
+      });
+    }
+
+    // Levels 2–10 – from downline users
+    for (const user of downlineUsers) {
+      const level = user.level;
+      if (level < 2 || level > 10) continue;
+
+      const sponsor = await this.userModel.findOne({
+        sponsor_id: user.sponsor_id,
+      });
+      if (!sponsor) continue;
+
+      const levelProfit =
+        (totalEligibleBotIncome * LEVEL_PERCENTAGES[level - 1]) / 100;
+      await this.addbotIncomeToSponsor(sponsor.sponsor_id, levelProfit);
+      totalDownlineIncome += levelProfit;
+
+      distributedBotIncome.push({
+        level,
+        sponsor_id: sponsor.sponsor_id,
+        username: sponsor.username,
+        email: sponsor.email,
+        phone: sponsor.phone,
+        bot_income: levelProfit,
+      });
+    }
+
+    const totalLevelIncome = totalDirectIncome + totalDownlineIncome;
+
+    return {
+      message: "bot_income successfully distributed across levels",
+      totalDistributed: totalEligibleBotIncome,
+      totalDirectIncome,
+      totalDownlineIncome,
+      distributedBotIncome,
+      totalLevelIncome,
+    };
+  }
+
+  async addbotIncomeToSponsor(sponsor_id: string, amount: number) {
+    await this.userModel.updateOne(
+      { sponsor_id },
+      { $inc: { bot_income: amount } },
+    );
+  }
+    async getLevelWiseProfit(userSponsorId: string): Promise<{
+    message: string;
+    totalDirectIncome: number;
+    totalDownlineIncome: number;
+    totalIncome: number;
+  }> {
+     const directUsers = await this.userModel.find({
+      referred_by: userSponsorId,
+    });
+
+    const downlineUsers = await this.getDownlineUsers(userSponsorId);
+
+    let totalDirectIncome = 0;
+    let totalDownlineIncome = 0;
+    let totalIncome = 0;
+
+    const directSponsorMap = new Map<string, boolean>();
+    const downlineSponsorMap = new Map<string, boolean>();
+
+    // ✅ Level 1 - Direct users
+    for (const user of directUsers) {
+      const sponsorId = user.sponsor_id;
+      if (directSponsorMap.has(sponsorId)) continue;
+
+      directSponsorMap.set(sponsorId, true);
+
+      const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
+      if (!sponsor) continue;
+
+      const levelProfit = sponsor.bot_income || 0;
+      totalDirectIncome += levelProfit;
+    }
+
+    // ✅ Levels 2–10 - Downline users
+    for (const user of downlineUsers) {
+      const level = user.level;
+      const sponsorId = user.sponsor_id;
+      if (level < 2 || level > 10) continue;
+      if (downlineSponsorMap.has(sponsorId)) continue;
+
+      downlineSponsorMap.set(sponsorId, true);
+
+      const sponsor = await this.userModel.findOne({ sponsor_id: sponsorId });
+      if (!sponsor) continue;
+
+      const levelProfit = sponsor.bot_income || 0;
+      totalDownlineIncome += levelProfit;
+    }
+    totalIncome = totalDirectIncome + totalDownlineIncome;
+    return {
+      message: "Profit summary calculated successfully",
+      totalDirectIncome,
+      totalDownlineIncome,
+      totalIncome,
+    };
   }
 }
