@@ -10,6 +10,7 @@ import {
   Param,
   Res,
   Patch,
+  Put,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PaymentOptionService } from "./payment-options.service";
@@ -24,12 +25,12 @@ export class PaymentOptionController {
   @Post()
   @UseGuards(AuthGuard("jwt"))
   @UseInterceptors(FileInterceptor("file"))
-  async create(
+  async createPaymentOption(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: PaymentOptionDto,
     @Req() req,
   ) {
-    return this.paymentOptionService.create(file, dto, req.user.sponsor_id);
+    return this.paymentOptionService.createPaymentOption(file, dto, req.user.sponsor_id);
   }
 
   @Get("pdf/:sponsor_id")
@@ -39,31 +40,16 @@ export class PaymentOptionController {
     return result;
   }
 
-  @Patch(":sponsor_id/demat-amount")
+  @Put(":sponsor_id")
   async updateDematAmount(
     @Param("sponsor_id") sponsor_id: string,
     @Body() body: any,
   ) {
-    return this.paymentOptionService.updateDematAmount(
+    return this.paymentOptionService.updatePaymentOption(
       sponsor_id,
-      body.demat_amount,
-      body.payment_sponsor_id,
-      body.is_active,
+      body,
     );
   }
-
-  @Patch(":sponsor_id/deposit-amount")
-  async updateAmountDeposited(
-    @Param("sponsor_id") sponsor_id: string,
-    @Body() body: any,
-  ) {
-    return this.paymentOptionService.updateAmountDeposited(
-      sponsor_id,
-      body.amount,
-      body.payment_sponsor_id,
-      body.is_active,
-    );
-  }  
 
   @Get("history/:sponsor_id")
   getHistory(@Param("sponsor_id") sponsor_id: string) {

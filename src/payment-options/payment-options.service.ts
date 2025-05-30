@@ -22,14 +22,13 @@ export class PaymentOptionService {
     this.bucket = this.configService.get<string>("AWS_BUCKET_NAME")!;
   }
 
-  async create(
+  async createPaymentOption(
     file: Express.Multer.File,
     dto: PaymentOptionDto,
     paymentSponsorId: string,
   ) {
-    let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id: dto.sponsor_id });
     const key = `payment_uploads/${Date.now()}_${file.originalname}`;
-
+  
     const uploadResult = await this.s3Service.uploadFile(
       file.buffer,
       this.bucket,
@@ -37,25 +36,43 @@ export class PaymentOptionService {
       file.mimetype,
       "attachment",
     );
+  
+    let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id: dto.sponsor_id });
+  
+    if (paymentOption) {
+      if (dto.dematAmount) {
+        paymentOption.demat_amount = (paymentOption.demat_amount || 0) + dto.dematAmount;
+      }
+      if (dto.amount) {
+        paymentOption.amount = (paymentOption.amount || 0) + dto.amount;
+      }
+  
+      paymentOption.file_path = uploadResult.Location!;
+      paymentOption.file_key = uploadResult.Key!;
 
-    const saved = await this.paymentOptionModel.create({
-      amount: dto.amount,
-      demat_amount: dto.dematAmount,
-      sponsor_id: dto.sponsor_id,
-      file_path: uploadResult.Location,
-      file_key: uploadResult.Key,
-      payment_sponsor_id: paymentSponsorId,
-    });
+      await paymentOption.save();
+    } else {
+      paymentOption = await this.paymentOptionModel.create({
+        amount: dto.amount,
+        demat_amount: dto.dematAmount,
+        sponsor_id: dto.sponsor_id,
+        file_path: uploadResult.Location,
+        file_key: uploadResult.Key,
+        payment_sponsor_id: paymentSponsorId,
+      });
+    }
+  
     await this.userModel.findOneAndUpdate(
       { sponsor_id: dto.sponsor_id },
       { is_active: false },
     );
+  
     return {
       status: "success",
-      message: "New payment record created",
-      data: saved,
+      message: "Payment option created",
+      data: paymentOption,
     };
-  }
+  }  
 
   async getPdfBySponsorId(sponsor_id: string) {
     const record = await this.paymentOptionModel.findOne({ sponsor_id });
@@ -134,73 +151,62 @@ export class PaymentOptionService {
     };
   }
 
-  async updateAmountDeposited(
+  async updatePaymentAmount(
     sponsor_id: string,
     amount: number,
-    payment_sponsor_id: string,
-    is_active?: boolean,
+    type: 'amount' | 'demat',
   ) {
     sponsor_id = sponsor_id.trim();
-
-    let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
-
+  
+    const paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
     if (!paymentOption) {
-      paymentOption = new this.paymentOptionModel({
-        sponsor_id,
-        amount: amount,
-        activated_amount: is_active ? amount : 0,
-        payment_sponsor_id,
-      });
-      await paymentOption.save();
-    } else {
-      if (is_active === true) {
-        paymentOption.activated_amount += amount;
-        await paymentOption.save();
-      } else {
-        paymentOption.activated_amount += amount;
-        await paymentOption.save();
-      }
+      throw new NotFoundException("Payment option not found for sponsor");
     }
+  
+    if (type === 'amount') {
+      paymentOption.activated_amount = (paymentOption.activated_amount || 0) + amount;
+      paymentOption.amount = (paymentOption.amount || 0) + amount;
+    } else if (type === 'demat') {
+      paymentOption.activated_demat_amount = (paymentOption.activated_demat_amount || 0) + amount;
+      paymentOption.demat_amount = (paymentOption.demat_amount || 0) + amount;
+    } else {
+      throw new Error("Invalid type. Must be 'amount' or 'demat'");
+    }
+  
+    await paymentOption.save();
+  
+    return {
+      status: 'success',
+      message: `Updated ${type} successfully`,
+      data: paymentOption,
+    };
+  }  
 
+  async updatePaymentOption(
+    sponsor_id: string,
+    dto: Partial<{ amount: number; demat_amount: number }>,
+  ) {
+    sponsor_id = sponsor_id.trim();
+  
+    const paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
+    if (!paymentOption) {
+      throw new NotFoundException("Payment option not found for sponsor");
+    }
+  
+    if (typeof dto.amount === 'number') {
+      paymentOption.activated_amount = (paymentOption.activated_amount || 0) + dto.amount;
+    }
+  
+    if (typeof dto.demat_amount === 'number') {
+      paymentOption.activated_demat_amount = (paymentOption.activated_demat_amount || 0) + dto.demat_amount;
+    }
+  
+    await paymentOption.save();
+  
     return {
       status: "success",
       message: "Payment option updated successfully",
       data: paymentOption,
     };
-  }
-
-   async updateDematAmount(
-      sponsor_id: string,
-      amount: number,
-      payment_sponsor_id: string,
-      is_active?: boolean,
-    ) {
-      sponsor_id = sponsor_id.trim();
-  
-      let paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
-  
-      if (!paymentOption) {
-        paymentOption = new this.paymentOptionModel({
-          sponsor_id,
-          demat_amount: amount,
-          activated_demat_amount: is_active ? amount : 0,
-          payment_sponsor_id,
-        });
-        await paymentOption.save();
-      } else {
-        if (is_active === true) {
-          paymentOption.activated_demat_amount += amount;
-          await paymentOption.save();
-        } else {
-          paymentOption.activated_demat_amount += amount;
-          await paymentOption.save();
-        }
-      }
-  
-      return {
-        status: "success",
-        message: "Payment option updated successfully",
-        data: paymentOption,
-      };
-    }
+  }  
 }
