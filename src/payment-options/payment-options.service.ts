@@ -43,11 +43,10 @@ export class PaymentOptionService {
 
     if (paymentOption) {
       if (dto.dematAmount) {
-        paymentOption.demat_amount =
-          (paymentOption.demat_amount || 0) + dto.dematAmount;
+        paymentOption.demat_amount += dto.dematAmount;
       }
       if (dto.amount) {
-        paymentOption.amount = (paymentOption.amount || 0) + dto.amount;
+        paymentOption.amount += dto.amount;
       }
 
       paymentOption.file_path = uploadResult.Location!;
@@ -207,11 +206,11 @@ export class PaymentOptionService {
     }
 
     if (dto.amount) {
-      paymentOption.activated_amount += dto.amount;
+      paymentOption.activated_amount = dto.amount;
     }
 
     if (dto.demat_amount) {
-      paymentOption.activated_demat_amount += dto.demat_amount;
+      paymentOption.activated_demat_amount = dto.demat_amount;
     }
 
     await paymentOption.save();
