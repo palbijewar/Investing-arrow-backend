@@ -219,7 +219,7 @@ export class AuthController {
     @Param("sponsor_id") sponsor_id: string,
     @Body() body: any,
   ) {
-    return this.usersService.updateActivatedAmount(
+    return this.usersService.updateActivationDate(
       sponsor_id,
       body.activation_date,
     );
