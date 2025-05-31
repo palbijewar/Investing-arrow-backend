@@ -77,4 +77,9 @@ export class PaymentOptionController {
       body.amount,
     );
   };
+
+  @Get(":sponsor_id/expiry")
+async getExpiry(@Param("sponsor_id") sponsor_id: string) {
+  return this.paymentOptionService.getExpiryInfo(sponsor_id);
+};
 }

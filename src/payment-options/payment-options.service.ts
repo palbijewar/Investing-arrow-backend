@@ -6,6 +6,7 @@ import { PaymentOptionDto } from "./dto/payment-options.dto";
 import { S3Service } from "./s3-config.service";
 import { ConfigService } from "@nestjs/config";
 import { User } from "src/users/user.schema";
+import { addDays, differenceInDays } from "date-fns";
 
 @Injectable()
 export class PaymentOptionService {
@@ -217,4 +218,55 @@ export class PaymentOptionService {
       data: paymentOption,
     };
   }  
+
+async getExpiryInfo(sponsor_id: string) {
+  const payment = await this.paymentOptionModel.findOne({ sponsor_id });
+
+  if (!payment) {
+    throw new NotFoundException("Payment not found for sponsor");
+  }
+
+  const amount = payment.activated_amount || payment.amount;
+  const createdAt = payment.createdAt;
+
+  let expiryDate: Date | null = null;
+  let expiryDays: number | string;
+
+  switch (amount) {
+    case 30:
+      expiryDate = addDays(createdAt, 30);
+      expiryDays = 30;
+      break;
+    case 75:
+      expiryDate = addDays(createdAt, 90);
+      expiryDays = 90;
+      break;
+    case 125:
+      expiryDate = addDays(createdAt, 180);
+      expiryDays = 180;
+      break;
+    case 220:
+      expiryDate = addDays(createdAt, 365);
+      expiryDays = 365;
+      break;
+    case 650:
+      expiryDate = null;
+      expiryDays = "Lifetime";
+      break;
+    default:
+      expiryDays = "Unknown";
+      expiryDate = null;
+  }
+
+  return {
+    status: "success",
+    data: {
+      sponsor_id,
+      amount,
+      plan_duration_days: expiryDays,
+      payment_date: createdAt,
+      expiry_date: expiryDate,
+    },
+  };
+}
 }
