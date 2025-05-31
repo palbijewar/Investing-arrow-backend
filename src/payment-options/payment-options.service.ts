@@ -217,6 +217,11 @@ if (typeof dto.demat_amount === "number") {
     Number(paymentOption.activated_demat_amount || 0) +
     Number(dto.demat_amount);
 }
+console.log({
+  activated_amount_before: paymentOption.activated_amount,
+  dto_amount: dto.amount,
+  sum: Number(paymentOption.activated_amount || 0) + Number(dto.amount),
+});
 
     await paymentOption.save();
 
