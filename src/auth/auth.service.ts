@@ -169,6 +169,7 @@ export class AuthService {
         profit: sponsor.profit,
         demat_amount: dematAmount,
         deposit_amount: amoutDeposited,
+        is_active: sponsor.is_active,
       },
     };
   }
