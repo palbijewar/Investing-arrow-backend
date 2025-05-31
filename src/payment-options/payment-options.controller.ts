@@ -41,7 +41,7 @@ export class PaymentOptionController {
   }
 
   @Put(":sponsor_id")
-  async updateDematAmount(
+  async updatePaymentOption(
     @Param("sponsor_id") sponsor_id: string,
     @Body() body: any,
   ) {
@@ -55,4 +55,26 @@ export class PaymentOptionController {
   getHistory(@Param("sponsor_id") sponsor_id: string) {
     return this.paymentOptionService.getSponsorPaymentHistory(sponsor_id);
   }
+
+  @Patch(":sponsor_id/demat-amount")
+  async updateDematAmount(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() body: any,
+  ) {
+    return this.paymentOptionService.updateDematAmount(
+      sponsor_id,
+      body,
+    );
+  };
+
+  @Patch(":sponsor_id/amount")
+  async updateAmount(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() body: any,
+  ) {
+    return this.paymentOptionService.updateAmount(
+      sponsor_id,
+      body,
+    );
+  };
 }

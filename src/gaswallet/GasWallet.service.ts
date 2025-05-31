@@ -130,5 +130,25 @@ export class GasWalletService {
       message: "Gas wallet updated successfully",
       data: wallet,
     };
-  }
+  };
+
+  async updateGasWalletAmountStrictly(sponsor_id: string, amount: number) {
+    sponsor_id = sponsor_id.trim();
+  
+    const wallet = await this.gasWalletModel.findOne({ sponsor_id });
+  
+    if (!wallet) {
+      throw new Error(`Gas wallet not found for sponsor_id: ${sponsor_id}`);
+    }
+  
+    wallet.activated_gas_wallet_amount = amount;
+    wallet.gas_wallet_amount = amount;
+    await wallet.save();
+  
+    return {
+      status: "success",
+      message: "Gas wallet updated successfully",
+      data: wallet,
+    };
+  };
 }

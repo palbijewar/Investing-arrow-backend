@@ -91,31 +91,39 @@ export class PaymentOptionService {
     };
   }
 
-  // async updateDematAmount(
-  //   sponsor_id: string,
-  //   demat_amount: number,
-  //   is_active?: boolean
-  // ): Promise<any> {
-  //   const updated = await this.paymentOptionModel.findOneAndUpdate(
-  //     { sponsor_id },
-  //     { $set: { demat_amount } },
-  //     { new: true, upsert: true }
-  //   );
+  async updateDematAmount(
+    sponsor_id: string,
+    demat_amount: number,
+  ): Promise<any> {
+    const updated = await this.paymentOptionModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { demat_amount } },
+      { new: true, upsert: true }
+    );
   
-  //   if (typeof is_active === 'boolean') {
-  //     await this.userModel.findOneAndUpdate(
-  //       { sponsor_id },
-  //       { $set: { is_active } },
-  //       { new: true }
-  //     );
-  //   }
+    return {
+      status: 'success',
+      message: 'Demat amount updated or created',
+      data: updated,
+    };
+  };
   
-  //   return {
-  //     status: 'success',
-  //     message: 'Demat amount updated or created',
-  //     data: updated,
-  //   };
-  // } 
+  async updateAmount(
+    sponsor_id: string,
+    amount: number,
+  ): Promise<any> {
+    const updated = await this.paymentOptionModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { amount } },
+      { new: true, upsert: true }
+    );
+  
+    return {
+      status: 'success',
+      message: 'Amount updated or created',
+      data: updated,
+    };
+  }; 
 
   async getSponsorPaymentHistory(payment_sponsor_id: string) {
     const records = await this.paymentOptionModel
