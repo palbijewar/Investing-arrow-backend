@@ -5,6 +5,7 @@ import { User } from "./user.schema";
 import { MailService } from "./mail.service";
 import { PaymentOption } from "src/payment-options/payment-options.schema";
 import { GasWallet } from "src/gaswallet/GasWallet.schema";
+import { addDays, differenceInDays } from "date-fns";
 
 @Injectable()
 export class UsersService {
@@ -203,27 +204,27 @@ export class UsersService {
     if (!user) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-  
+
     const updatedFields: any = {
       amount_deposited: Number(newAmount).toString(),
     };
-  
-    if (typeof is_active === 'boolean') {
+
+    if (typeof is_active === "boolean") {
       updatedFields.is_active = is_active;
     }
-  
+
     const updatedUser = await this.userModel.findOneAndUpdate(
       { sponsor_id },
       { $set: updatedFields },
       { new: true },
     );
-  
+
     return {
-      status: 'success',
-      message: 'Amount deposited updated successfully',
+      status: "success",
+      message: "Amount deposited updated successfully",
       data: updatedUser,
     };
-  }  
+  }
 
   async updatePackage(
     sponsor_id: string,
@@ -233,27 +234,28 @@ export class UsersService {
     const updatedFields: any = {
       package: newPackage.toString(),
     };
-  
-    if (typeof is_active === 'boolean') {
+
+    if (typeof is_active === "boolean") {
       updatedFields.is_active = is_active;
+      updatedFields.activation_date = new Date();
     }
-  
+
     const updatedUser = await this.userModel.findOneAndUpdate(
       { sponsor_id },
       { $set: updatedFields },
       { new: true },
     );
-  
+
     if (!updatedUser) {
       throw new Error(`User with sponsor_id ${sponsor_id} not found`);
     }
-  
+
     return {
-      status: 'success',
-      message: 'Package updated successfully',
+      status: "success",
+      message: "Package updated successfully",
       data: updatedUser,
     };
-  }  
+  }
 
   async getReferralLevels(
     sponsor_id: string,
@@ -271,7 +273,6 @@ export class UsersService {
 
       if (users.length === 0) break;
 
-      // Update each user's level field in DB
       for (const user of users) {
         await this.userModel.updateOne(
           { sponsor_id: user.sponsor_id },
@@ -702,32 +703,106 @@ export class UsersService {
 
   async getAllSponsorsWithSponsorId(sponsor_id: string): Promise<any[]> {
     const allSponsors: any[] = [];
-  
+
     const fetchDownline = async (currentSponsorId: string) => {
       const directSponsors = await this.userModel
         .find({ referred_by: currentSponsorId })
         .exec();
-  
+
       for (const sponsor of directSponsors) {
         const [paymentOption, gaswallet] = await Promise.all([
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
-  
+
         allSponsors.push({
           ...sponsor.toObject(),
           demat_amount: paymentOption?.demat_amount || null,
           amount_deposited: paymentOption?.amount || null,
           gas_wallet_fees: gaswallet?.gas_wallet_amount || null,
         });
-  
+
         // Recursively fetch their referrals (downline)
         await fetchDownline(sponsor.sponsor_id);
       }
     };
-  
+
     await fetchDownline(sponsor_id);
-  
+
     return allSponsors;
-  }  
+  }
+
+  async getExpiryInfo(sponsor_id: string) {
+    const sponsor = await this.userModel.findOne({ sponsor_id });
+
+    if (!sponsor) {
+      throw new NotFoundException("Payment not found for sponsor");
+    }
+
+    const packageAmount = sponsor.package;
+    const activationDate = sponsor.activation_date;
+
+    if (!activationDate) {
+      return {
+        status: "success",
+        data: {
+          sponsor_id,
+          packageAmount,
+          plan_duration_days: "Unknown",
+          payment_date: null,
+          expiry_date: null,
+          remaining_days: "Not activated yet",
+        },
+      };
+    }
+
+    let expiryDate: Date | null = null;
+    let expiryDays: number | string;
+    let remainingDays: number | string;
+
+    switch (packageAmount) {
+      case "30":
+        expiryDays = 30;
+        expiryDate = addDays(activationDate, 30);
+        break;
+      case "75":
+        expiryDays = 90;
+        expiryDate = addDays(activationDate, 90);
+        break;
+      case "125":
+        expiryDays = 180;
+        expiryDate = addDays(activationDate, 180);
+        break;
+      case "220":
+        expiryDays = 365;
+        expiryDate = addDays(activationDate, 365);
+        break;
+      case "650":
+        expiryDays = "Lifetime";
+        expiryDate = null;
+        break;
+      default:
+        expiryDays = "Unknown";
+        expiryDate = null;
+    }
+
+    if (typeof expiryDays === "number" && expiryDate) {
+      remainingDays = differenceInDays(expiryDate, new Date());
+      if (remainingDays < 0) remainingDays = 0;
+    } else {
+      remainingDays = expiryDays === "Lifetime" ? "Unlimited" : "Unknown";
+    }
+
+    return {
+      status: "success",
+      data: {
+        sponsor_id,
+        packageAmount,
+        plan_duration_days: expiryDays,
+        payment_date: activationDate,
+        expiry_date: expiryDate,
+        remaining_days: remainingDays,
+      },
+    };
+  }
 }

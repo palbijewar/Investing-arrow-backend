@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -28,16 +28,19 @@ export class User extends Document {
   level?: number;
 
   @Prop({ type: Number, default: 0 })
-  profit?: number;  
+  profit?: number;
 
   @Prop({ type: Number, default: 0 })
-  bot_income?: number; 
+  bot_income?: number;
 
   @Prop({ default: "default" })
   user_type: string;
 
   @Prop({ default: false })
   is_active: boolean;
+
+  @Prop({ type: Date })
+  activation_date: Date;
 
   createdAt?: Date;
   updatedAt?: Date;

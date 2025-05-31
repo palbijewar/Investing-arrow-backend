@@ -66,7 +66,8 @@ export class AuthController {
 
   @Get("users/sponsors/:sponsor_id")
   async getAllSponsorsWithSponsorId(@Param("sponsor_id") sponsor_id: string) {
-    const sponsors = await this.usersService.getAllSponsorsWithSponsorId(sponsor_id);
+    const sponsors =
+      await this.usersService.getAllSponsorsWithSponsorId(sponsor_id);
     return {
       status: "success",
       data: sponsors,
@@ -114,7 +115,11 @@ export class AuthController {
     @Param("sponsor_id") sponsor_id: string,
     @Body() data: any,
   ) {
-    return this.usersService.updatePackage(sponsor_id, data.package, data.is_active);
+    return this.usersService.updatePackage(
+      sponsor_id,
+      data.package,
+      data.is_active,
+    );
   }
 
   @Patch("users/profit/:sponsor_id")
@@ -191,5 +196,10 @@ export class AuthController {
       message: "Referral link generated successfully",
       data: { referralLink },
     };
+  }
+
+  @Get("users/:sponsor_id/expiry")
+  async getExpiry(@Param("sponsor_id") sponsor_id: string) {
+    return this.usersService.getExpiryInfo(sponsor_id);
   }
 }

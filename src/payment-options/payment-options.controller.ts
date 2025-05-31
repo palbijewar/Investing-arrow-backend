@@ -30,7 +30,11 @@ export class PaymentOptionController {
     @Body() dto: PaymentOptionDto,
     @Req() req,
   ) {
-    return this.paymentOptionService.createPaymentOption(file, dto, req.user.sponsor_id);
+    return this.paymentOptionService.createPaymentOption(
+      file,
+      dto,
+      req.user.sponsor_id,
+    );
   }
 
   @Get("pdf/:sponsor_id")
@@ -45,10 +49,7 @@ export class PaymentOptionController {
     @Param("sponsor_id") sponsor_id: string,
     @Body() body: any,
   ) {
-    return this.paymentOptionService.updatePaymentOption(
-      sponsor_id,
-      body,
-    );
+    return this.paymentOptionService.updatePaymentOption(sponsor_id, body);
   }
 
   @Get("history/:sponsor_id")
@@ -65,21 +66,24 @@ export class PaymentOptionController {
       sponsor_id,
       body.demat_amount,
     );
-  };
+  }
 
   @Patch(":sponsor_id/amount")
   async updateAmount(
     @Param("sponsor_id") sponsor_id: string,
     @Body() body: any,
   ) {
-    return this.paymentOptionService.updateAmount(
+    return this.paymentOptionService.updateAmount(sponsor_id, body.amount);
+  }
+
+  @Patch(":sponsor_id/amount")
+  async updateActivatedAmount(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() body: any,
+  ) {
+    return this.paymentOptionService.updateActivatedAmount(
       sponsor_id,
       body.amount,
     );
-  };
-
-  @Get(":sponsor_id/expiry")
-async getExpiry(@Param("sponsor_id") sponsor_id: string) {
-  return this.paymentOptionService.getExpiryInfo(sponsor_id);
-};
+  }
 }

@@ -26,7 +26,7 @@ export class PaymentOption extends Document {
 
   @Prop({ required: true })
   file_key: string;
-
+  
   createdAt: Date;
   updatedAt: Date;
 }
