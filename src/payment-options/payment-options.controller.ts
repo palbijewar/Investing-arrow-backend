@@ -63,7 +63,7 @@ export class PaymentOptionController {
   ) {
     return this.paymentOptionService.updateDematAmount(
       sponsor_id,
-      body,
+      body.demat_amount,
     );
   };
 
@@ -74,7 +74,7 @@ export class PaymentOptionController {
   ) {
     return this.paymentOptionService.updateAmount(
       sponsor_id,
-      body,
+      body.amount,
     );
   };
 }
