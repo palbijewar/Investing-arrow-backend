@@ -805,4 +805,21 @@ export class UsersService {
       },
     };
   }
+
+  async updateActivatedAmount(
+    sponsor_id: string,
+    activation_date: number | string,
+  ): Promise<any> {
+    const updated = await this.userModel.findOneAndUpdate(
+      { sponsor_id },
+      { $set: { activation_date } },
+      { new: true, upsert: true },
+    );
+
+    return {
+      status: "success",
+      message: "activation date updated",
+      data: updated,
+    };
+  }
 }

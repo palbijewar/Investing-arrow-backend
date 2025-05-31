@@ -202,4 +202,26 @@ export class AuthController {
   async getExpiry(@Param("sponsor_id") sponsor_id: string) {
     return this.usersService.getExpiryInfo(sponsor_id);
   }
+
+  @Patch("users/profit/:sponsor_id")
+  async updateUserActivationDate(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() data: any,
+  ) {
+    const amount = data.profit;
+
+    return this.usersService.updateProfit(sponsor_id, amount);
+  }
+
+  
+  @Patch(":sponsor_id/activate-date")
+  async updateActivatedAmount(
+    @Param("sponsor_id") sponsor_id: string,
+    @Body() body: any,
+  ) {
+    return this.usersService.updateActivatedAmount(
+      sponsor_id,
+      body.activation_date,
+    );
+  }
 }
