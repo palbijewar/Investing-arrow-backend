@@ -806,7 +806,7 @@ export class UsersService {
     };
   }
 
-  async updateActivatedAmount(
+  async updateActivationDate(
     sponsor_id: string,
     activation_date: number | string,
   ): Promise<any> {
