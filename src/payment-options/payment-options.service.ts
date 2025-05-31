@@ -177,13 +177,11 @@ export class PaymentOptionService {
     }
 
     if (type === "amount") {
-      paymentOption.activated_amount =
-        (paymentOption.activated_amount || 0) + amount;
-      paymentOption.amount = (paymentOption.amount || 0) + amount;
+      paymentOption.activated_amount += amount;
+      paymentOption.amount += amount;
     } else if (type === "demat") {
-      paymentOption.activated_demat_amount =
-        (paymentOption.activated_demat_amount || 0) + amount;
-      paymentOption.demat_amount = (paymentOption.demat_amount || 0) + amount;
+      paymentOption.activated_demat_amount += amount;
+      paymentOption.demat_amount += amount;
     } else {
       throw new Error("Invalid type. Must be 'amount' or 'demat'");
     }
@@ -209,13 +207,11 @@ export class PaymentOptionService {
     }
 
     if (dto.amount) {
-      paymentOption.activated_amount =
-        (paymentOption.activated_amount || 0) + dto.amount;
+      paymentOption.activated_amount += dto.amount;
     }
 
     if (dto.demat_amount) {
-      paymentOption.activated_demat_amount =
-        (paymentOption.activated_demat_amount || 0) + dto.demat_amount;
+      paymentOption.activated_demat_amount += dto.demat_amount;
     }
 
     await paymentOption.save();
