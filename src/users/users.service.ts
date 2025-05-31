@@ -173,27 +173,37 @@ export class UsersService {
 
   async getAllSponsors(is_active?: boolean): Promise<any[]> {
     const query = typeof is_active === "boolean" ? { is_active } : {};
-
+  
     const sponsors = await this.userModel.find(query).exec();
-
+  
     const enrichedSponsors = await Promise.all(
       sponsors.map(async (sponsor) => {
         const [paymentOption, gaswallet] = await Promise.all([
           this.paymentOptionModel.findOne({ sponsor_id: sponsor.sponsor_id }),
           this.gasWalletModel.findOne({ sponsor_id: sponsor.sponsor_id }),
         ]);
-
+  
+        const formatDate = (date: Date) => {
+          if (!date) return null;
+          const d = new Date(date);
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const year = String(d.getFullYear()).slice(-2);
+          return `${day}/${month}/${year}`;
+        };
+  
         return {
           ...sponsor.toObject(),
+          activation_date: formatDate(sponsor.activation_date),
           demat_amount: paymentOption?.demat_amount || null,
           amount_deposited: paymentOption?.amount || null,
           gas_wallet_fees: gaswallet?.gas_wallet_amount || null,
         };
       }),
     );
-
+  
     return enrichedSponsors;
-  }
+  }  
 
   async updateAmountDeposited(
     sponsor_id: string,
