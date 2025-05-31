@@ -208,15 +208,15 @@ export class PaymentOptionService {
       throw new NotFoundException("Payment option not found for sponsor");
     }
 
-    if (typeof dto.amount === "number") {
-      paymentOption.activated_amount =
-        (paymentOption.activated_amount || 0) + dto.amount;
-    }
-
-    if (typeof dto.demat_amount === "number") {
-      paymentOption.activated_demat_amount =
-        (paymentOption.activated_demat_amount || 0) + dto.demat_amount;
-    }
+  if (typeof dto.amount === "number") {
+  paymentOption.activated_amount =
+    Number(paymentOption.activated_amount || 0) + Number(dto.amount);
+}
+if (typeof dto.demat_amount === "number") {
+  paymentOption.activated_demat_amount =
+    Number(paymentOption.activated_demat_amount || 0) +
+    Number(dto.demat_amount);
+}
 
     await paymentOption.save();
 
