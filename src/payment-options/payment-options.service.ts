@@ -197,40 +197,43 @@ export class PaymentOptionService {
     };
   }
 
-  async updatePaymentOption(
-    sponsor_id: string,
-    dto: Partial<{ amount: number; demat_amount: number }>,
-  ) {
-    sponsor_id = sponsor_id.trim();
+ async updatePaymentOption(
+  sponsor_id: string,
+  dto: Partial<{ amount: number; demat_amount: number }>
+) {
+  sponsor_id = sponsor_id.trim();
 
-    const paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
-    if (!paymentOption) {
-      throw new NotFoundException("Payment option not found for sponsor");
-    }
+  const paymentOption = await this.paymentOptionModel.findOne({ sponsor_id });
+  if (!paymentOption) {
+    throw new NotFoundException("Payment option not found for sponsor");
+  }
 
   if (typeof dto.amount === "number") {
-  paymentOption.activated_amount =
-    Number(paymentOption.activated_amount || 0) + Number(dto.amount);
-}
-if (typeof dto.demat_amount === "number") {
-  paymentOption.activated_demat_amount =
-    Number(paymentOption.activated_demat_amount || 0) +
-    Number(dto.demat_amount);
-}
-console.log({
-  activated_amount_before: paymentOption.activated_amount,
-  dto_amount: dto.amount,
-  sum: Number(paymentOption.activated_amount || 0) + Number(dto.amount),
-});
+    const before = Number(paymentOption.activated_amount || 0);
+    const toAdd = Number(dto.amount);
+    console.log({
+      activated_amount_before: before,
+      dto_amount: toAdd,
+      sum: before + toAdd,
+    });
 
-    await paymentOption.save();
-
-    return {
-      status: "success",
-      message: "Payment option updated successfully",
-      data: paymentOption,
-    };
+    paymentOption.activated_amount = before + toAdd;
   }
+
+  if (typeof dto.demat_amount === "number") {
+    const before = Number(paymentOption.activated_demat_amount || 0);
+    const toAdd = Number(dto.demat_amount);
+    paymentOption.activated_demat_amount = before + toAdd;
+  }
+
+  await paymentOption.save();
+
+  return {
+    status: "success",
+    message: "Payment option updated successfully",
+    data: paymentOption,
+  };
+}
 
   async updateActivatedAmount(
     sponsor_id: string,
