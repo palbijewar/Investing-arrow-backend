@@ -43,10 +43,10 @@ export class PaymentOptionService {
 
     if (paymentOption) {
       if (dto.dematAmount) {
-        paymentOption.demat_amount += dto.dematAmount;
+        paymentOption.demat_amount += Number(dto.dematAmount);
       }
       if (dto.amount) {
-        paymentOption.amount += dto.amount;
+        paymentOption.amount += Number(dto.amount);
       }
 
       paymentOption.file_path = uploadResult.Location!;
@@ -204,13 +204,12 @@ export class PaymentOptionService {
     if (!paymentOption) {
       throw new NotFoundException("Payment option not found for sponsor");
     }
-
     if (dto.amount) {
-      paymentOption.activated_amount = dto.amount;
+      paymentOption.activated_amount += dto.amount;
     }
 
     if (dto.demat_amount) {
-      paymentOption.activated_demat_amount = dto.demat_amount;
+      paymentOption.activated_demat_amount += dto.demat_amount;
     }
 
     await paymentOption.save();
