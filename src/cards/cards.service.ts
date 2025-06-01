@@ -146,8 +146,9 @@ export class CardsService {
   // 2. Downline portfolio Investment
   async getDownlinePortfolioInvestment(sponsor_id: string): Promise<number> {
     const downlineUsers = await this.getAllDownlineUsers(sponsor_id);
-    const userIds = downlineUsers.map((u) => u.sponsor_id.toString());
-
+    const activeUsers = downlineUsers.filter((user) => user.is_active === true);
+    const userIds = activeUsers.map((u) => u.sponsor_id.toString());
+    
     const result = await this.paymentOptionModel.aggregate([
       { $match: { sponsor_id: { $in: userIds } } },
       {
@@ -252,7 +253,6 @@ export class CardsService {
     const directReferrals = await this.userModel
       .find({
         referred_by: sponsor_id,
-        is_active: true,
       })
       .lean();
 
