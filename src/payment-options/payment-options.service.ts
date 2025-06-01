@@ -214,7 +214,10 @@ export class PaymentOptionService {
     }
 
     await paymentOption.save();
-
+    await this.userModel.findOneAndUpdate(
+      { sponsor_id: dto.sponsor_id },
+      { is_active: true },
+    );
     return {
       status: "success",
       message: "Payment option updated successfully",
